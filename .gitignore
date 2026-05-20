@@ -3,7 +3,6 @@
 .github/agents/
 .git/
 .github/skills/
-.github/workflows/
 .github/prompts/
 .github/context-mode/
 
