@@ -7,7 +7,7 @@ name = "colectica-mcp-server"
 version = "0.1.0"
 description = "MCP server for Colectica Repository REST API"
 readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 authors = [
     {name = "AYOUB KEBAILI", email = "keayoub@msn.com"}
 ]

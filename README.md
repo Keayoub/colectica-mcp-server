@@ -108,3 +108,9 @@ Run Colectica server tool unit tests locally:
 ```powershell
 python -m unittest tests/test_server_tools.py tests/test_client_pagination.py -v
 ```
+
+## License
+
+This project is licensed under the Apache License 2.0.
+See the [LICENSE](LICENSE) file for details.
+

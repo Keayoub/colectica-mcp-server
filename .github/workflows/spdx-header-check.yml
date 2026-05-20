@@ -1,0 +1,36 @@
+name: SPDX Header Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  spdx-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify SPDX headers in Python source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+
+          while IFS= read -r file; do
+            first_line=$(grep -m1 -v '^[[:space:]]*$' "$file" || true)
+            if [[ "$first_line" != "# SPDX-License-Identifier: Apache-2.0" ]]; then
+              echo "Missing or incorrect SPDX header: $file"
+              missing=1
+            fi
+          done < <(find src -type f -name "*.py" | sort)
+
+          if [[ "$missing" -ne 0 ]]; then
+            echo "SPDX header check failed."
+            exit 1
+          fi
+
+          echo "SPDX header check passed."
