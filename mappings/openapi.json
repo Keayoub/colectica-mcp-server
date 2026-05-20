@@ -1,0 +1,5883 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Colectica Repository REST API",
+    "description": "Colectica Repository REST API",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/v1/agency": {
+      "post": {
+        "tags": [
+          "Agency"
+        ],
+        "summary": "Marks the repository as authoritative for the specified agency.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgencyRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgencyRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgencyRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgencyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/agency/{agency}": {
+      "delete": {
+        "tags": [
+          "Agency"
+        ],
+        "summary": "Marks the repository as no longer authoritative for the specified agency.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/{version}/comment": {
+      "post": {
+        "tags": [
+          "Comment"
+        ],
+        "summary": "Adds a comment to the specified item.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommentRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/comment": {
+      "get": {
+        "tags": [
+          "Comment"
+        ],
+        "summary": "Gets the comments for the specified item.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserComment"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/_getCommentList": {
+      "post": {
+        "tags": [
+          "Comment"
+        ],
+        "summary": "Gets multiple comments from the repository.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCommentsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCommentsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCommentsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCommentsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserComment"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ddi/{agency}/{identifier}": {
+      "get": {
+        "tags": [
+          "Ddi"
+        ],
+        "summary": "Returns the item serialized in DDI XML as a DDI Fragment",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/ddi/{agency}/{identifier}/{version}": {
+      "get": {
+        "tags": [
+          "Ddi"
+        ],
+        "summary": "Returns the item serialized in DDI XML as a DDI Fragment",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/ddiset/{agency}/{identifier}": {
+      "get": {
+        "tags": [
+          "Ddi"
+        ],
+        "summary": "Returns the item and set of all children items serialized in DDI XML as a DDI FragmentInstance",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/ddiset/{agency}/{identifier}/{version}": {
+      "get": {
+        "tags": [
+          "Ddi"
+        ],
+        "summary": "Returns the item and set of all children items serialized in DDI XML as a DDI FragmentInstance",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/json/{agency}/{identifier}": {
+      "get": {
+        "tags": [
+          "Ddi"
+        ],
+        "summary": "Returns the item serialized in JSON",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/json/{agency}/{identifier}/{version}": {
+      "get": {
+        "tags": [
+          "Ddi"
+        ],
+        "summary": "Returns the item serialized in JSON",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/jsonset/{agency}/{identifier}": {
+      "get": {
+        "tags": [
+          "Ddi"
+        ],
+        "summary": "Returns the item and set of all children items serialized in nested JSON",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/jsonset/{agency}/{identifier}/{version}": {
+      "get": {
+        "tags": [
+          "Ddi"
+        ],
+        "summary": "Returns the item and set of all children items serialized in nested JSON",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identifier",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/jsonset/filtered": {
+      "post": {
+        "tags": [
+          "Ddi"
+        ],
+        "summary": "Returns the item and set of all children items serialized in nested JSON, and excludes specified item types",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FilteredSetRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FilteredSetRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FilteredSetRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FilteredSetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/event": {
+      "post": {
+        "tags": [
+          "Event"
+        ],
+        "summary": "Store information about an event.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoggedEvent"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoggedEvent"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoggedEvent"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoggedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/item": {
+      "post": {
+        "tags": [
+          "Item"
+        ],
+        "summary": "Registers the items in the repository.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterItemsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterItemsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterItemsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterItemsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryConflict"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/{version}": {
+      "get": {
+        "tags": [
+          "Item"
+        ],
+        "summary": "Gets an item from the repository.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/_getList": {
+      "post": {
+        "tags": [
+          "Item"
+        ],
+        "summary": "Gets multiple items from the repository.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetItemsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetItemsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetItemsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetItemsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/_updateState": {
+      "post": {
+        "tags": [
+          "Item"
+        ],
+        "summary": "Updates the Deprecated State of a set of items",
+        "description": "Required permissions: ColecticaAdministrator.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStateRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/item/_delete": {
+      "post": {
+        "tags": [
+          "Item"
+        ],
+        "summary": "Delete items from the Repository",
+        "description": "Required permissions: ColecticaAdministrator.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}": {
+      "get": {
+        "tags": [
+          "Item"
+        ],
+        "summary": "Gets the latest version of an item from the repository.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/_getListLatest": {
+      "post": {
+        "tags": [
+          "Item"
+        ],
+        "summary": "Gets a list of the latest versions of undeserialized items from the repository. \r\nTo retrieve deserialized",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLatestItemsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLatestItemsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLatestItemsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLatestItemsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/history": {
+      "get": {
+        "tags": [
+          "Item"
+        ],
+        "summary": "Gets the version history of an item.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryItemMetadata"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/{version}/description": {
+      "get": {
+        "tags": [
+          "Item"
+        ],
+        "summary": "Gets a description of a repository item. The description\r\ncontains identification, naming, and summary information, but not the entire contents of the item.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryItemMetadata"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/_getDescriptions": {
+      "post": {
+        "tags": [
+          "Item"
+        ],
+        "summary": "Gets descriptions of multiple repository items. The descriptions\r\ncontain identification, naming, and summary information, but not the entire contents of the item.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetRepositoryItemDescriptionsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetRepositoryItemDescriptionsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetRepositoryItemDescriptionsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetRepositoryItemDescriptionsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryItemMetadata"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/permission": {
+      "post": {
+        "tags": [
+          "Permission"
+        ],
+        "summary": "Adds the specified permissions to the repository.",
+        "description": "Required permissions: ColecticaAdministrator.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySecurityContext"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySecurityContext"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySecurityContext"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySecurityContext"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/permission/_get": {
+      "post": {
+        "tags": [
+          "Permission"
+        ],
+        "summary": "Gets all permissions that apply to the specified items and item types.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetPermissionsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetPermissionsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetPermissionsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetPermissionsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositorySecurityContext"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/permission/_delete": {
+      "post": {
+        "tags": [
+          "Permission"
+        ],
+        "summary": "Removes the specified permissions from the repository.",
+        "description": "Required permissions: ColecticaAdministrator.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemovePermissionsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemovePermissionsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemovePermissionsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemovePermissionsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/_query/relationship/bysubject/descriptions": {
+      "post": {
+        "tags": [
+          "Query"
+        ],
+        "summary": "Gets the repository item descriptions for items that match the specified relationship search parameters.\r\nThe search will query for items referenced by the target item specified in the search facet.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryItemMetadata"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/_query/relationship/byobject/descriptions": {
+      "post": {
+        "tags": [
+          "Query"
+        ],
+        "summary": "Gets the repository item descriptions for items that match the specified relationship search parameters.\r\nThe search will query for items that reference the target item specified in the search facet.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryItemMetadata"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/_query/relationship/bysubject": {
+      "post": {
+        "tags": [
+          "Query"
+        ],
+        "summary": "Gets a list of items referenced by the specified item, according to the provided search options.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TypedIdTriple"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/_query/relationship/byobject": {
+      "post": {
+        "tags": [
+          "Query"
+        ],
+        "summary": "Gets a list of items that reference the specified item, according to the provided search options.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TypedIdTriple"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/_query/relationship/matrix": {
+      "post": {
+        "tags": [
+          "Query"
+        ],
+        "summary": "Gets a matrix representing all items in a set and the relationships among those items.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetRelationshipsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetRelationshipsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetRelationshipsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetRelationshipsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdjacencyMatrix"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/_query/relationship/matrix/typed": {
+      "post": {
+        "tags": [
+          "Query"
+        ],
+        "summary": "Gets a matrix representing all items in a set and the relationships among those items.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetTypedRelationshipsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetTypedRelationshipsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetTypedRelationshipsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetTypedRelationshipsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TypedAdjacencyMatrix"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/_query": {
+      "post": {
+        "tags": [
+          "Query"
+        ],
+        "summary": "Searches the specified the repository for items, according to the provided search options.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/_query/advanced": {
+      "post": {
+        "tags": [
+          "Query"
+        ],
+        "summary": "Searches the specified the repository for items, according to the provided search options.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvancedSearchRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvancedSearchRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvancedSearchRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvancedSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvancedSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/_query/set": {
+      "post": {
+        "tags": [
+          "Query"
+        ],
+        "summary": "Searches the specified set of items according to the provided search options.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchTypedSetRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchTypedSetRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchTypedSetRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchTypedSetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TypedIdTriple"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/{version}/rating": {
+      "post": {
+        "tags": [
+          "Rating"
+        ],
+        "summary": "Adds a rating to the specified item.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Rating"
+        ],
+        "summary": "Gets the ratings for the specified item.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserRating"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/replication/targets": {
+      "get": {
+        "tags": [
+          "Replication"
+        ],
+        "summary": "Applies a tag to an item in the repository.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Target"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/replication": {
+      "post": {
+        "tags": [
+          "Replication"
+        ],
+        "summary": "Request a replication from one repository to another",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReplicationRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReplicationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReplicationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReplicationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/replication/allowed-initial-states": {
+      "post": {
+        "tags": [
+          "Replication"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllowedTargetStates"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/replication/allowed-state-transitions": {
+      "post": {
+        "tags": [
+          "Replication"
+        ],
+        "summary": "Gets the allowed target states that an item may transition to, based on its current state.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "requestBody": {
+          "description": "The identifier of the item to have its state changed",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentifierInRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentifierInRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentifierInRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentifierInRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllowedTargetStates"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/replication/request-state-change": {
+      "post": {
+        "tags": [
+          "Replication"
+        ],
+        "summary": "Requests a state change for an item on a repository.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStateChangeRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStateChangeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStateChangeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStateChangeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/repository/info": {
+      "get": {
+        "tags": [
+          "Repository"
+        ],
+        "summary": "Gets information about the repository and the items it contains.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/repository/statistics": {
+      "get": {
+        "tags": [
+          "Repository"
+        ],
+        "summary": "Gets statistics about the content in the repository.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryStatistics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/set/{agency}/{id}/{version}": {
+      "get": {
+        "tags": [
+          "Set"
+        ],
+        "summary": "Gets the set of all items under the specified root.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IdentifierTriple"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/set/{agency}/{id}/{version}/typed": {
+      "get": {
+        "tags": [
+          "Set"
+        ],
+        "summary": "Gets the set of all items under the specified root. The returned \r\nidentifiers include the type of each item.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TypedIdTriple"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/set/{agency}/{id}": {
+      "get": {
+        "tags": [
+          "Set"
+        ],
+        "summary": "Gets the set of items defined by the specified root. Each item in the set will\r\nhave the latest version number for that item.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IdentifierTriple"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/setting/{setting}": {
+      "get": {
+        "tags": [
+          "Setting"
+        ],
+        "summary": "Gets the repository setting with the specified name.",
+        "description": "Required permissions: ColecticaAdministrator.",
+        "parameters": [
+          {
+            "name": "setting",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositorySetting"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Setting"
+        ],
+        "summary": "Removes the repository setting with the specified name.",
+        "description": "Required permissions: ColecticaAdministrator.",
+        "parameters": [
+          {
+            "name": "setting",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/setting": {
+      "get": {
+        "tags": [
+          "Setting"
+        ],
+        "summary": "Gets all the repository settings.",
+        "description": "Required permissions: ColecticaAdministrator.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositorySetting"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Setting"
+        ],
+        "summary": "Adds or updates a repository setting.",
+        "description": "Required permissions: ColecticaAdministrator.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySetting"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySetting"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySetting"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySetting"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/{version}/tag/{tag}": {
+      "put": {
+        "tags": [
+          "Tag"
+        ],
+        "summary": "Applies a tag to an item in the repository.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tag"
+        ],
+        "summary": "Removes a tag from an item in the repository.",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/{version}/tag": {
+      "get": {
+        "tags": [
+          "Tag"
+        ],
+        "summary": "Gets the tags applied to the specified item in the repository.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/token/CreateToken": {
+      "post": {
+        "tags": [
+          "Token"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenLoginModel"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenLoginModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenLoginModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenLoginModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessTokenModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/token/CreateWindowsToken": {
+      "get": {
+        "tags": [
+          "Token"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessTokenModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transaction": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Create a new Repository transaction",
+        "description": "Required permissions: ColecticaAdministrator or ColecticaUser.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryTransaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transaction/_getTransactions": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Get Transaction metadata",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryTransaction"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transaction/_listTransactions": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Get Transaction metadata",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionListOptions"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionListOptions"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionListOptions"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionListOptions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryTransaction"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transaction/_commitTransaction": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Register the items in the transaction",
+        "description": "Required permissions: ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionCommitOptions"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionCommitOptions"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionCommitOptions"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionCommitOptions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryTransactionResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transaction/_cancelTransaction": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Cancel a transaction",
+        "description": "Required permissions: ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionCancelOptions"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionCancelOptions"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionCancelOptions"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionCancelOptions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryTransaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transaction/_addItemsToTransaction": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Add items to a transaction to be registered",
+        "description": "Required permissions: ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionAddItemsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionAddItemsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionAddItemsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryTransactionAddItemsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryTransaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transaction/_getItemsInTransaction": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Get Transaction metadata",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser",
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/versions/_latest": {
+      "get": {
+        "tags": [
+          "VersionNumber"
+        ],
+        "summary": "Gets the latest version number of a repository item.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/{tag}/versions/_latest": {
+      "get": {
+        "tags": [
+          "VersionNumber"
+        ],
+        "summary": "Gets the latest version number of the specified repository item that has the specified tag.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/_getLatestVersionNumbers": {
+      "post": {
+        "tags": [
+          "VersionNumber"
+        ],
+        "summary": "Gets the latest version numbers of multiple items.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLatestVersionNumbersRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLatestVersionNumbersRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLatestVersionNumbersRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLatestVersionNumbersRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IdentifierTriple"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/item/{agency}/{id}/versions": {
+      "get": {
+        "tags": [
+          "VersionNumber"
+        ],
+        "summary": "Gets a list of all versions of the specified item.",
+        "description": "Required permissions: ColecticaAdministrator, ColecticaUser, or ColecticaGuest.",
+        "parameters": [
+          {
+            "name": "agency",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IdentifierTriple"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccessTokenModel": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "expires": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdjacencyMatrix": {
+        "type": "object",
+        "properties": {
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Relationship"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "reverseTraversal": {
+            "type": "boolean"
+          },
+          "roots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierTriple"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "predicate": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdvancedSearchRequest": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "itemTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "maxResults": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "nextResult": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "searchDepricatedItems": {
+            "type": "boolean"
+          },
+          "searchLatestVersion": {
+            "type": "boolean"
+          },
+          "searchParentSets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            },
+            "nullable": true
+          },
+          "searchChildSets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            },
+            "nullable": true
+          },
+          "resultsIncludeDescribable": {
+            "type": "boolean"
+          },
+          "resultsIncludeItemTags": {
+            "type": "boolean"
+          },
+          "resultsIncludeAll": {
+            "type": "boolean"
+          },
+          "textFacets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TextPropertyFacet"
+            },
+            "nullable": true
+          },
+          "decimalFacets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DecimalPropertyFacet"
+            },
+            "nullable": true
+          },
+          "dateFacets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DatePropertyFacet"
+            },
+            "nullable": true
+          },
+          "codeValueFacets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodeValuePropertyFacet"
+            },
+            "nullable": true
+          },
+          "booleanFacets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BooleanPropertyFacet"
+            },
+            "nullable": true
+          },
+          "locatorFacets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocatorPropertyFacet"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdvancedSearchResponse": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdvancedSearchResult"
+            },
+            "nullable": true
+          },
+          "returnedResults": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nextResult": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "databaseTime": {
+            "type": "string",
+            "format": "date-span"
+          },
+          "repositoryTime": {
+            "type": "string",
+            "format": "date-span"
+          },
+          "executionDetails": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdvancedSearchResult": {
+        "type": "object",
+        "properties": {
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "compositeId": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          },
+          "isDeprecated": {
+            "type": "boolean"
+          },
+          "itemType": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "textProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/LanguageTaggedString"
+              },
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "dateProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "booleanProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "nullable": true
+          },
+          "decimalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "double"
+              },
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "codeValueProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CodeValue"
+              },
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "locatorProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "internalRowId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AllowedTargetStates": {
+        "type": "object",
+        "properties": {
+          "allowedStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TargetStatesForFamily"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Attachment": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "attachmentType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BasedOn": {
+        "type": "object",
+        "properties": {
+          "propertyEventsSuspended": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "code": {
+            "$ref": "#/components/schemas/CodeValue"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TypedIdTriple"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BooleanPropertyFacet": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "booleanValue": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CodeValue": {
+        "type": "object",
+        "properties": {
+          "propertyEventsSuspended": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasAnyAttributes": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "language": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "codeListId": {
+            "type": "string",
+            "nullable": true
+          },
+          "codeListName": {
+            "type": "string",
+            "nullable": true
+          },
+          "codeListAgency": {
+            "type": "string",
+            "nullable": true
+          },
+          "codeListVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "otherValue": {
+            "type": "string",
+            "nullable": true
+          },
+          "codeListUrn": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CodeValuePropertyFacet": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "codeTerms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "codeListUsed": {
+            "$ref": "#/components/schemas/IdentifierInRequest"
+          },
+          "versionlessCodeList": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CommitOptions": {
+        "type": "object",
+        "properties": {
+          "versionRationale": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "setName": {
+            "type": "string",
+            "nullable": true
+          },
+          "namedOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Contributor": {
+        "type": "object",
+        "properties": {
+          "propertyEventsSuspended": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "affiliation": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayLabel": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContributorWithRoles": {
+        "type": "object",
+        "properties": {
+          "propertyEventsSuspended": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "affiliation": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayLabel": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodeValue"
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateAgencyRequest": {
+        "required": [
+          "agency",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "agency": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateCommentRequest": {
+        "required": [
+          "comment"
+        ],
+        "type": "object",
+        "properties": {
+          "comment": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateReplicationRequest": {
+        "type": "object",
+        "properties": {
+          "rootItem": {
+            "$ref": "#/components/schemas/IdentifierInRequest"
+          },
+          "targetRepositoryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "requesterEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "scheduledReplicationTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateStateChangeRequest": {
+        "type": "object",
+        "properties": {
+          "serverId": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemId": {
+            "type": "string",
+            "nullable": true
+          },
+          "stateFamily": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetState": {
+            "type": "string",
+            "nullable": true
+          },
+          "scheduledReplicationTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomField": {
+        "type": "object",
+        "properties": {
+          "propertyEventsSuspended": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "title": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "valueType": {
+            "$ref": "#/components/schemas/CustomFieldType"
+          },
+          "definedTypeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "hasValue": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "controlledVocabularyId": {
+            "$ref": "#/components/schemas/TypedIdTriple"
+          },
+          "relationshipTargetType": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stringValue": {
+            "type": "string",
+            "nullable": true
+          },
+          "uriValue": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "dateValue": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "relatedItemIdValue": {
+            "$ref": "#/components/schemas/TypedIdTriple"
+          },
+          "multipleRelatedItemIdsValue": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TypedIdTriple"
+            },
+            "nullable": true
+          },
+          "multilingualStringValue": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "numberValue": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "booleanValue": {
+            "type": "boolean"
+          },
+          "hasDefinedType": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "displayLabel": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomFieldType": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "DatePropertyFacet": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "onOrBeforeDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onOrAfterDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DdiStringType": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          30,
+          31
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "DecimalPropertyFacet": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "decimalValues": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            },
+            "nullable": true
+          },
+          "lessThanOrEqual": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "greaterThanOrEqual": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteRequest": {
+        "type": "object",
+        "properties": {
+          "identifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            },
+            "nullable": true
+          },
+          "setIdentifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            },
+            "nullable": true
+          },
+          "transactionIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
+          },
+          "deleteType": {
+            "$ref": "#/components/schemas/DeleteType"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteResult": {
+        "type": "object",
+        "properties": {
+          "deletedCounts": {
+            "$ref": "#/components/schemas/RemovalCounts"
+          },
+          "referenced": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/IdentifierTriple"
+              },
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "referencedChildren": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/IdentifierTriple"
+              },
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "deleteType": {
+            "$ref": "#/components/schemas/DeleteType"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteType": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "DublinCore": {
+        "type": "object",
+        "properties": {
+          "propertyEventsSuspended": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasValue": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "accessRights": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "alternateTitle": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "coverage": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "format": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "identifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InternationalIdentifier"
+            },
+            "nullable": true
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodeValue"
+            },
+            "nullable": true
+          },
+          "relation": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "rights": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "subject": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "subTitle": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "title": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "type": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "license": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "creators": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Contributor"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "contributors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContributorWithRoles"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "publishers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContributorWithRoles"
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FilteredSetRequest": {
+        "type": "object",
+        "properties": {
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "ignoredItemTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "acceptedItemTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "errorOnMissing": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetCommentsRequest": {
+        "required": [
+          "identifiers"
+        ],
+        "type": "object",
+        "properties": {
+          "identifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetItemsRequest": {
+        "required": [
+          "identifiers"
+        ],
+        "type": "object",
+        "properties": {
+          "identifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetLatestItemsRequest": {
+        "required": [
+          "identifiers"
+        ],
+        "type": "object",
+        "properties": {
+          "identifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetLatestVersionNumbersRequest": {
+        "required": [
+          "identifiers"
+        ],
+        "type": "object",
+        "properties": {
+          "identifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetPermissionsRequest": {
+        "type": "object",
+        "properties": {
+          "identifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            },
+            "nullable": true
+          },
+          "itemTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetRelationshipsRequest": {
+        "required": [
+          "facet",
+          "rootItems"
+        ],
+        "type": "object",
+        "properties": {
+          "rootItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            }
+          },
+          "facet": {
+            "$ref": "#/components/schemas/RelationshipFacet"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetRepositoryItemDescriptionsRequest": {
+        "required": [
+          "identifiers"
+        ],
+        "type": "object",
+        "properties": {
+          "identifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTypedRelationshipsRequest": {
+        "required": [
+          "facet",
+          "rootItems"
+        ],
+        "type": "object",
+        "properties": {
+          "rootItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            }
+          },
+          "facet": {
+            "$ref": "#/components/schemas/RelationshipFacet"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GraphSearchRequest": {
+        "required": [
+          "itemTypes",
+          "targetItem"
+        ],
+        "type": "object",
+        "properties": {
+          "itemTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "targetItem": {
+            "$ref": "#/components/schemas/IdentifierInRequest"
+          },
+          "useDistinctResultItem": {
+            "type": "boolean"
+          },
+          "useDistinctTargetItem": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "IdentifierInRequest": {
+        "required": [
+          "agencyId",
+          "identifier",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "agencyId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "IdentifierTriple": {
+        "type": "object",
+        "properties": {
+          "item1": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "item2": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "item3": {
+            "type": "string",
+            "nullable": true
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InternationalIdentifier": {
+        "type": "object",
+        "properties": {
+          "propertyEventsSuspended": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "managingAgency": {
+            "$ref": "#/components/schemas/CodeValue"
+          },
+          "identifier": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ItemPermission": {
+        "type": "object",
+        "properties": {
+          "permissionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "roleName": {
+            "type": "string",
+            "nullable": true
+          },
+          "permission": {
+            "$ref": "#/components/schemas/PermissionType"
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ItemTypePermission": {
+        "type": "object",
+        "properties": {
+          "permissionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "roleName": {
+            "type": "string",
+            "nullable": true
+          },
+          "permission": {
+            "$ref": "#/components/schemas/PermissionType"
+          },
+          "itemType": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LanguageTaggedString": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "languageTag": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LocatorPropertyFacet": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "locators": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LoggedEvent": {
+        "type": "object",
+        "properties": {
+          "logged": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "application": {
+            "type": "string",
+            "nullable": true
+          },
+          "level": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventData": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemAgencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemVersion": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Note": {
+        "type": "object",
+        "properties": {
+          "item1": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          },
+          "item2": {
+            "$ref": "#/components/schemas/NoteType"
+          },
+          "item3": {
+            "type": "string",
+            "nullable": true
+          },
+          "item4": {
+            "type": "string",
+            "nullable": true
+          },
+          "objectId": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          },
+          "type": {
+            "$ref": "#/components/schemas/NoteType"
+          },
+          "predicate": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NoteType": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "OtherMaterial": {
+        "type": "object",
+        "properties": {
+          "propertyEventsSuspended": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserId"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "customFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomField"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "userAttributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserAttribute"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "isDirty": {
+            "type": "boolean"
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "childrenDereferenced": {
+            "type": "boolean"
+          },
+          "isPopulated": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "versionDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "versionResponsibility": {
+            "type": "string",
+            "nullable": true
+          },
+          "versionRationale": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "compositeId": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          },
+          "otherMaterials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OtherMaterial"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "basedOn": {
+            "$ref": "#/components/schemas/BasedOn"
+          },
+          "succeededBy": {
+            "$ref": "#/components/schemas/TypedIdTriple"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Attachment"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "thumbnailImageUri": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "bannerImageUri": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "childTypesAccepted": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "itemType": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "populatedEmbededFromParent": {
+            "type": "boolean"
+          },
+          "materialType": {
+            "$ref": "#/components/schemas/CodeValue"
+          },
+          "mimeType": {
+            "type": "string",
+            "nullable": true
+          },
+          "urlReference": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "urnReference": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "dublinCoreMetadata": {
+            "$ref": "#/components/schemas/DublinCore"
+          },
+          "sizeInBytes": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "displayLabel": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PermissionType": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "RegisterItemsRequest": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RepositoryItem"
+            }
+          },
+          "options": {
+            "$ref": "#/components/schemas/CommitOptions"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Relationship": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          },
+          "object": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelationshipFacet": {
+        "type": "object",
+        "properties": {
+          "predicate": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reverseTraversal": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RemovalCounts": {
+        "type": "object",
+        "properties": {
+          "checkout": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "event": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "item": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemMultilingualText": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemRelationship": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemTag": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "note": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "permission": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userComment": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userRating": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RemovePermissionsRequest": {
+        "required": [
+          "permissionIds"
+        ],
+        "type": "object",
+        "properties": {
+          "permissionIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryConflict": {
+        "type": "object",
+        "properties": {
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "identifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierTriple"
+            },
+            "nullable": true
+          },
+          "httpStatusCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "compositeId": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryInfo": {
+        "type": "object",
+        "properties": {
+          "citation": {
+            "$ref": "#/components/schemas/DublinCore"
+          },
+          "repositories": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "canRead": {
+            "type": "boolean"
+          },
+          "canAdministrator": {
+            "type": "boolean"
+          },
+          "canWrite": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryItem": {
+        "type": "object",
+        "properties": {
+          "internalRowId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "itemType": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "compositeId": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          },
+          "item": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Note"
+            },
+            "nullable": true
+          },
+          "versionDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "versionResponsibility": {
+            "type": "string",
+            "nullable": true
+          },
+          "versionRationale": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "isDeprecated": {
+            "type": "boolean"
+          },
+          "isProvisional": {
+            "type": "boolean"
+          },
+          "itemFormat": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transactionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "versionCreationType": {
+            "$ref": "#/components/schemas/RepositoryItemCommitType"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryItemCommitType": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "RepositoryItemMetadata": {
+        "type": "object",
+        "properties": {
+          "itemType": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "compositeId": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          },
+          "versionDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "versionResponsibility": {
+            "type": "string",
+            "nullable": true
+          },
+          "versionRationale": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "summary": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "itemName": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "label": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "displayLabel": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "isDeprecated": {
+            "type": "boolean"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositorySecurityContext": {
+        "type": "object",
+        "properties": {
+          "identifierPermissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemPermission"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "typePermissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemTypePermission"
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositorySetting": {
+        "type": "object",
+        "properties": {
+          "settingName": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "longValue": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryStatistics": {
+        "type": "object",
+        "properties": {
+          "citation": {
+            "$ref": "#/components/schemas/DublinCore"
+          },
+          "repositories": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "canRead": {
+            "type": "boolean"
+          },
+          "canAdministrator": {
+            "type": "boolean"
+          },
+          "canWrite": {
+            "type": "boolean"
+          },
+          "totalItems": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalItemsWithDeprecated": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalRevisions": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalRevisionsWithDeprecated": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "itemCountsWithDeprecated": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
+          },
+          "itemCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
+          },
+          "itemRevisionCountsWithDeprecated": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
+          },
+          "itemRevisionCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "nullable": true
+          },
+          "totalSize": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryTransaction": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "persistentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RepositoryTransactionStatus"
+          },
+          "transactionType": {
+            "$ref": "#/components/schemas/RepositoryTransactionType"
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "propagatedItemCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalItemCount": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "data": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryTransactionAddItemsRequest": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RepositoryItem"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryTransactionCancelOptions": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "versionRationale": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryTransactionCommitOptions": {
+        "type": "object",
+        "properties": {
+          "versionRationale": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "setName": {
+            "type": "string",
+            "nullable": true
+          },
+          "namedOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "transactionType": {
+            "$ref": "#/components/schemas/RepositoryTransactionType"
+          },
+          "scopedSets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierTriple"
+            },
+            "nullable": true
+          },
+          "transactionId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryTransactionListOptions": {
+        "type": "object",
+        "properties": {
+          "startingTransactionId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "maxResultSize": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "descending": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryTransactionResult": {
+        "type": "object",
+        "properties": {
+          "userCommitted": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierTriple"
+            },
+            "nullable": true
+          },
+          "systemCommitted": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierTriple"
+            },
+            "nullable": true
+          },
+          "notProcessed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierTriple"
+            },
+            "nullable": true
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/RepositoryTransaction"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RepositoryTransactionStatus": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "RepositoryTransactionType": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "SearchRequest": {
+        "type": "object",
+        "properties": {
+          "cultures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "itemTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "languageSortOrder": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "maxResults": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rankResults": {
+            "type": "boolean"
+          },
+          "resultOffset": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nextResult": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "resultOrdering": {
+            "$ref": "#/components/schemas/SearchResultOrdering"
+          },
+          "searchDepricatedItems": {
+            "type": "boolean"
+          },
+          "searchLatestVersion": {
+            "type": "boolean"
+          },
+          "searchSetPredicate": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "searchSets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            },
+            "nullable": true
+          },
+          "searchTargets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DdiStringType"
+            },
+            "nullable": true
+          },
+          "searchTerms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "usePrefixSearch": {
+            "type": "boolean"
+          },
+          "returnIdentifiersOnly": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchResponse": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            },
+            "nullable": true
+          },
+          "totalResults": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "returnedResults": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nextResult": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "databaseTime": {
+            "type": "string",
+            "format": "date-span"
+          },
+          "repositoryTime": {
+            "type": "string",
+            "format": "date-span"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "internalRowId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "itemType": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "compositeId": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          },
+          "item": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Note"
+            },
+            "nullable": true
+          },
+          "versionDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "versionResponsibility": {
+            "type": "string",
+            "nullable": true
+          },
+          "versionRationale": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "isDeprecated": {
+            "type": "boolean"
+          },
+          "isProvisional": {
+            "type": "boolean"
+          },
+          "itemFormat": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transactionId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "versionCreationType": {
+            "$ref": "#/components/schemas/RepositoryItemCommitType"
+          },
+          "isDirty": {
+            "type": "boolean"
+          },
+          "userAttributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserAttribute"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "childrenDereferenced": {
+            "type": "boolean"
+          },
+          "isPopulated": {
+            "type": "boolean"
+          },
+          "summary": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "userIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserId"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "itemName": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "label": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "displayLabel": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "customFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomField"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "metadataRank": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "repositoryName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isAuthoritative": {
+            "type": "boolean"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Attachment"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "basedOn": {
+            "$ref": "#/components/schemas/BasedOn"
+          },
+          "succeededBy": {
+            "$ref": "#/components/schemas/TypedIdTriple"
+          },
+          "thumbnailImageUri": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "bannerImageUri": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "childTypesAccepted": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "otherMaterials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OtherMaterial"
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchResultOrdering": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "SearchTypedSetRequest": {
+        "required": [
+          "facet",
+          "rootItem"
+        ],
+        "type": "object",
+        "properties": {
+          "rootItem": {
+            "$ref": "#/components/schemas/IdentifierInRequest"
+          },
+          "facet": {
+            "$ref": "#/components/schemas/SetSearchFacet"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SetSearchFacet": {
+        "type": "object",
+        "properties": {
+          "itemTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "leafItemTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "predicate": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reverseTraversal": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Target": {
+        "type": "object",
+        "properties": {
+          "serverId": {
+            "type": "string",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TargetState": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "names": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TargetStatesForFamily": {
+        "type": "object",
+        "properties": {
+          "familyToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "familyNames": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "targetStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TargetState"
+            },
+            "nullable": true
+          },
+          "selectedState": {
+            "$ref": "#/components/schemas/TargetState"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TextPropertyFacet": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "textTerms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "languageCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "exactMatch": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "exactDiacriticalLigatures": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "exactCase": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokenLoginModel": {
+        "required": [
+          "password",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TypedAdjacencyMatrix": {
+        "type": "object",
+        "properties": {
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TypedRelationship"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "reverseTraversal": {
+            "type": "boolean"
+          },
+          "roots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierTriple"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "predicate": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TypedIdTriple": {
+        "type": "object",
+        "properties": {
+          "item1": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          },
+          "item2": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "readOnly": true
+          },
+          "agencyId": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "itemType": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "compositeId": {
+            "$ref": "#/components/schemas/IdentifierTriple"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TypedRelationship": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "$ref": "#/components/schemas/TypedIdTriple"
+          },
+          "object": {
+            "$ref": "#/components/schemas/TypedIdTriple"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateStateRequest": {
+        "required": [
+          "ids",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentifierInRequest"
+            }
+          },
+          "state": {
+            "type": "boolean"
+          },
+          "applyToAllVersions": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserAttribute": {
+        "type": "object",
+        "properties": {
+          "propertyEventsSuspended": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "key": {
+            "$ref": "#/components/schemas/CodeValue"
+          },
+          "value": {
+            "$ref": "#/components/schemas/CodeValue"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserComment": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "commentTime": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserId": {
+        "type": "object",
+        "properties": {
+          "propertyEventsSuspended": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "string",
+            "nullable": true
+          },
+          "identifier": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserRating": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "identifier": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "agencyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "OpenIdConnect": {
+        "type": "apiKey",
+        "description": "JWT Authorization header. Example: \"Authorization: Bearer {token}\"",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  }
+}

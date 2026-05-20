@@ -1,0 +1,2 @@
+"""Colectica MCP server package."""
+
