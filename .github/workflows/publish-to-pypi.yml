@@ -1,4 +1,4 @@
-name: Publish to PyPI
+name: Publish to TestPyPI
 
 on:
   push:
@@ -8,6 +8,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment:
+      name: testpypi
     permissions:
       id-token: write  # REQUIRED for OIDC
       contents: read
@@ -30,5 +32,7 @@ jobs:
         run: |
           python -m build
 
-      - name: Publish to PyPI
+      - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
