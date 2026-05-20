@@ -12,6 +12,7 @@ __pycache__/
 # Ignore virtual environment directories
 venv/
 env/
+dist/
 # Ignore log files
 *.log
 # Ignore Jupyter Notebook checkpoints
