@@ -519,6 +519,722 @@ async def get_item_json_set_filtered(body: dict[str, Any], auth_mode: str = "aut
     )
 
 
+@mcp.tool()
+async def create_transaction(auth_mode: str = "auto") -> dict[str, Any]:
+    """Create a new repository transaction."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["CreateTransaction", _colectica_op("POST", "/api/v1/transaction")],
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_transactions(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get transaction metadata by ids."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["GetTransactions", _colectica_op("POST", "/api/v1/transaction/_getTransactions")],
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def list_transactions(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """List transaction metadata with list options."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["ListTransactions", _colectica_op("POST", "/api/v1/transaction/_listTransactions")],
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def commit_transaction(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Commit and register items in a transaction."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["CommitTransaction", _colectica_op("POST", "/api/v1/transaction/_commitTransaction")],
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def cancel_transaction(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Cancel a repository transaction."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["CancelTransaction", _colectica_op("POST", "/api/v1/transaction/_cancelTransaction")],
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def add_items_to_transaction(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Add items to a repository transaction."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["AddItemsToTransaction", _colectica_op("POST", "/api/v1/transaction/_addItemsToTransaction")],
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_items_in_transaction(transaction_id: str, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get all items currently associated with a transaction."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["GetItemsInTransaction", _colectica_op("POST", "/api/v1/transaction/_getItemsInTransaction")],
+        arguments={"transactionId": transaction_id},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_tags(agency: str, id: str, version: int, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get tags applied to an item."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["GetTags", _colectica_op("GET", "/api/v1/item/{agency}/{id}/{version}/tag")],
+        arguments={"agency": agency, "id": id, "version": version},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def add_tag(agency: str, id: str, version: int, tag: str, auth_mode: str = "auto") -> dict[str, Any]:
+    """Apply a tag to an item."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["AddTag", _colectica_op("PUT", "/api/v1/item/{agency}/{id}/{version}/tag/{tag}")],
+        arguments={"agency": agency, "id": id, "version": version, "tag": tag},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def remove_tag(
+    agency: str,
+    id: str,
+    version: int,
+    tag: str,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Remove a tag from an item."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["RemoveTag", _colectica_op("DELETE", "/api/v1/item/{agency}/{id}/{version}/tag/{tag}")],
+        arguments={"agency": agency, "id": id, "version": version, "tag": tag},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_ratings(agency: str, id: str, version: int, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get ratings for an item."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["GetRatings", _colectica_op("GET", "/api/v1/item/{agency}/{id}/{version}/rating")],
+        arguments={"agency": agency, "id": id, "version": version},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def add_rating(
+    agency: str,
+    id: str,
+    version: int,
+    rating: Any,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Add a rating to an item."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["AddRating", _colectica_op("POST", "/api/v1/item/{agency}/{id}/{version}/rating")],
+        arguments={"agency": agency, "id": id, "version": version, "body": rating},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def search_advanced(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Search repository with advanced search options."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["SearchAdvanced", _colectica_op("POST", "/api/v1/_query/advanced")],
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def search_set(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Search within a typed set."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["SearchSet", _colectica_op("POST", "/api/v1/_query/set")],
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_repository_statistics(auth_mode: str = "auto") -> dict[str, Any]:
+    """Get repository statistics."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["GetRepositoryStatistics", _colectica_op("GET", "/api/v1/repository/statistics")],
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Batch 1 — Item lifecycle, versions, history, and comments
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+async def get_item_versions(agency: str, id: str, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get a list of all versions of the specified item."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/item/{agency}/{id}/versions"),
+        arguments={"agency": agency, "id": id},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_item_latest_version(agency: str, id: str, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the latest version number of a repository item."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/item/{agency}/{id}/versions/_latest"),
+        arguments={"agency": agency, "id": id},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_item_latest_version_by_tag(agency: str, id: str, tag: str, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the latest version number of an item that has the specified tag."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/item/{agency}/{id}/{tag}/versions/_latest"),
+        arguments={"agency": agency, "id": id, "tag": tag},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_item_description(agency: str, id: str, version: int, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get identification, naming, and summary information for a single item version."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/item/{agency}/{id}/{version}/description"),
+        arguments={"agency": agency, "id": id, "version": version},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_item_history(agency: str, id: str, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the version history of an item."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/item/{agency}/{id}/history"),
+        arguments={"agency": agency, "id": id},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_item_comments(agency: str, id: str, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the comments for the specified item."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/item/{agency}/{id}/comment"),
+        arguments={"agency": agency, "id": id},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def add_item_comment(
+    agency: str, id: str, version: int, body: dict[str, Any], auth_mode: str = "auto"
+) -> dict[str, Any]:
+    """Add a comment to the specified item version."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/item/{agency}/{id}/{version}/comment"),
+        arguments={"agency": agency, "id": id, "version": version, "body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def delete_items(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Delete items from the repository (requires ColecticaAdministrator)."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/item/_delete"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_item_descriptions(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get descriptions of multiple repository items (identification and summary, not full content)."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/item/_getDescriptions"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_latest_version_numbers(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the latest version numbers of multiple items."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/item/_getLatestVersionNumbers"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_items_list(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get multiple items from the repository."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/item/_getList"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_items_list_latest(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get a list of the latest versions of items from the repository."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/item/_getListLatest"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def update_item_state(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Update the deprecated state of a set of items (requires ColecticaAdministrator)."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/item/_updateState"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_comment_list(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get multiple comments from the repository."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/item/_getCommentList"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Batch 2 — Relationship queries
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+async def search_relationships_by_subject(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get items referenced by the specified item according to the provided search options."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/_query/relationship/bysubject"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def search_relationships_by_subject_descriptions(
+    body: dict[str, Any], auth_mode: str = "auto"
+) -> dict[str, Any]:
+    """Get item descriptions for items referenced by the target item in the search facet."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/_query/relationship/bysubject/descriptions"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def search_relationships_by_object(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get items that reference the specified item according to the provided search options."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/_query/relationship/byobject"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def search_relationships_by_object_descriptions(
+    body: dict[str, Any], auth_mode: str = "auto"
+) -> dict[str, Any]:
+    """Get item descriptions for items that reference the target item in the search facet."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/_query/relationship/byobject/descriptions"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_relationship_matrix(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get a matrix of all items in a set and the relationships among those items."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/_query/relationship/matrix"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_relationship_matrix_typed(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get a typed matrix of all items in a set and the relationships among those items."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/_query/relationship/matrix/typed"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Batch 3 — Settings, agency, events, permissions, item sets, and tokens
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+async def get_settings(auth_mode: str = "auto") -> dict[str, Any]:
+    """Get all repository settings."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/setting"),
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_setting(setting: str, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the repository setting with the specified name."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/setting/{setting}"),
+        arguments={"setting": setting},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def set_setting(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Add or update a repository setting."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/setting"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def delete_setting(setting: str, auth_mode: str = "auto") -> dict[str, Any]:
+    """Remove the repository setting with the specified name."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("DELETE", "/api/v1/setting/{setting}"),
+        arguments={"setting": setting},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def create_agency(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Mark the repository as authoritative for the specified agency."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/agency"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def delete_agency(agency: str, auth_mode: str = "auto") -> dict[str, Any]:
+    """Mark the repository as no longer authoritative for the specified agency."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("DELETE", "/api/v1/agency/{agency}"),
+        arguments={"agency": agency},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def publish_event(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Store information about an event in the repository."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/event"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def add_permissions(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Add the specified permissions to the repository."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/permission"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def delete_permissions(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Remove the specified permissions from the repository."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/permission/_delete"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_permissions(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get all permissions that apply to the specified items and item types."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/permission/_get"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_item_set(
+    agency: str, id: str, version: int | None = None, auth_mode: str = "auto"
+) -> dict[str, Any]:
+    """Get the set of items under the specified root with the latest version of each item.
+
+    Optionally pass ``version`` as a query parameter to pin the root item version.
+    """
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    args: dict[str, Any] = {"agency": agency, "id": id}
+    if version is not None:
+        args["version"] = version
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/set/{agency}/{id}"),
+        arguments=args,
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_item_set_versioned(agency: str, id: str, version: int, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the set of all items under the specified root at the given version."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/set/{agency}/{id}/{version}"),
+        arguments={"agency": agency, "id": id, "version": version},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_item_set_typed(agency: str, id: str, version: int, auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the typed set of all items under the specified root (identifiers include item type)."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/set/{agency}/{id}/{version}/typed"),
+        arguments={"agency": agency, "id": id, "version": version},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def create_token(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Create a Colectica authentication token."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/token/CreateToken"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def create_windows_token(auth_mode: str = "auto") -> dict[str, Any]:
+    """Create a Colectica authentication token using Windows credentials."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/token/CreateWindowsToken"),
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Batch 4 — Replication
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+async def get_replication_targets(auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the list of replication targets configured for this repository."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("GET", "/api/v1/replication/targets"),
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def create_replication(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Initiate a replication operation."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/replication"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_replication_allowed_initial_states(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the allowed initial states for a replication operation."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/replication/allowed-initial-states"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_replication_allowed_transitions(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Get the allowed state transitions for a replication operation."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/replication/allowed-state-transitions"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def request_replication_state_change(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
+    """Request a state change for a replication operation."""
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await client.call_operation(
+        _colectica_op("POST", "/api/v1/replication/request-state-change"),
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Colectica MCP Server")
     parser.add_argument(

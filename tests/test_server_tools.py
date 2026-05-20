@@ -268,3 +268,768 @@ class ServerToolTests(unittest.IsolatedAsyncioTestCase):
             auth_mode="bearer",
         )
         self.assertEqual(result, expected)
+
+    async def test_create_transaction_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.create_transaction(auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with("CreateTransaction", auth_mode="auto")
+        self.assertEqual(result, expected)
+
+    async def test_get_transactions_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"transactionIds": [1, 2]}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_transactions(body=body, auth_mode="basic")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GetTransactions",
+            arguments={"body": body},
+            auth_mode="basic",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_list_transactions_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"skip": 0, "take": 10}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.list_transactions(body=body, auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "ListTransactions",
+            arguments={"body": body},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_commit_transaction_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"transactionId": 1}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.commit_transaction(body=body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "CommitTransaction",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_cancel_transaction_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"transactionId": 1}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.cancel_transaction(body=body, auth_mode="none")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "CancelTransaction",
+            arguments={"body": body},
+            auth_mode="none",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_add_items_to_transaction_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"transactionId": 1, "items": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.add_items_to_transaction(body=body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "AddItemsToTransaction",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_items_in_transaction_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_items_in_transaction(transaction_id="1", auth_mode="basic")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GetItemsInTransaction",
+            arguments={"transactionId": "1"},
+            auth_mode="basic",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_tags_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_tags("AG", "item-1", 1, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GetTags",
+            arguments={"agency": "AG", "id": "item-1", "version": 1},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_add_tag_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.add_tag("AG", "item-1", 1, "gold", auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "AddTag",
+            arguments={"agency": "AG", "id": "item-1", "version": 1, "tag": "gold"},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_remove_tag_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.remove_tag("AG", "item-1", 1, "gold", auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "RemoveTag",
+            arguments={"agency": "AG", "id": "item-1", "version": 1, "tag": "gold"},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_ratings_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_ratings("AG", "item-1", 1, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GetRatings",
+            arguments={"agency": "AG", "id": "item-1", "version": 1},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_add_rating_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.add_rating("AG", "item-1", 1, rating=5, auth_mode="basic")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "AddRating",
+            arguments={"agency": "AG", "id": "item-1", "version": 1, "body": 5},
+            auth_mode="basic",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_search_advanced_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"searchText": "income"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.search_advanced(body=body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "SearchAdvanced",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_search_set_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"items": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.search_set(body=body, auth_mode="none")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "SearchSet",
+            arguments={"body": body},
+            auth_mode="none",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_repository_statistics_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_repository_statistics(auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with("GetRepositoryStatistics", auth_mode="auto")
+        self.assertEqual(result, expected)
+
+    # ------------------------------------------------------------------
+    # Batch 1 — Item lifecycle, versions, history, comments
+    # ------------------------------------------------------------------
+
+    async def test_get_item_versions_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_versions("AG", "item-1", auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_item_agency_id_versions",
+            arguments={"agency": "AG", "id": "item-1"},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_item_latest_version_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_latest_version("AG", "item-1", auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_item_agency_id_versions_latest",
+            arguments={"agency": "AG", "id": "item-1"},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_item_latest_version_by_tag_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_latest_version_by_tag("AG", "item-1", "gold", auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_item_agency_id_tag_versions_latest",
+            arguments={"agency": "AG", "id": "item-1", "tag": "gold"},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_item_description_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_description("AG", "item-1", 3, auth_mode="basic")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_item_agency_id_version_description",
+            arguments={"agency": "AG", "id": "item-1", "version": 3},
+            auth_mode="basic",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_item_history_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_history("AG", "item-1", auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_item_agency_id_history",
+            arguments={"agency": "AG", "id": "item-1"},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_item_comments_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_comments("AG", "item-1", auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_item_agency_id_comment",
+            arguments={"agency": "AG", "id": "item-1"},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_add_item_comment_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"text": "Nice item"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.add_item_comment("AG", "item-1", 2, body, auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_item_agency_id_version_comment",
+            arguments={"agency": "AG", "id": "item-1", "version": 2, "body": body},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_delete_items_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"items": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.delete_items(body, auth_mode="basic")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_item_delete",
+            arguments={"body": body},
+            auth_mode="basic",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_item_descriptions_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"repositoryItems": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_descriptions(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_item_getDescriptions",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_latest_version_numbers_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"repositoryItems": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_latest_version_numbers(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_item_getLatestVersionNumbers",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_items_list_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"repositoryItems": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_items_list(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_item_getList",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_items_list_latest_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"repositoryItems": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_items_list_latest(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_item_getListLatest",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_update_item_state_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"items": [], "deprecated": True}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.update_item_state(body, auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_item_updateState",
+            arguments={"body": body},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_comment_list_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"items": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_comment_list(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_item_getCommentList",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    # ------------------------------------------------------------------
+    # Batch 2 — Relationship queries
+    # ------------------------------------------------------------------
+
+    async def test_search_relationships_by_subject_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"subject": "urn:x"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.search_relationships_by_subject(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_query_relationship_bysubject",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_search_relationships_by_subject_descriptions_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"subject": "urn:x"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.search_relationships_by_subject_descriptions(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_query_relationship_bysubject_descriptions",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_search_relationships_by_object_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"object": "urn:y"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.search_relationships_by_object(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_query_relationship_byobject",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_search_relationships_by_object_descriptions_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"object": "urn:y"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.search_relationships_by_object_descriptions(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_query_relationship_byobject_descriptions",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_relationship_matrix_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"items": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_relationship_matrix(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_query_relationship_matrix",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_relationship_matrix_typed_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"items": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_relationship_matrix_typed(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_query_relationship_matrix_typed",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    # ------------------------------------------------------------------
+    # Batch 3 — Settings, agency, events, permissions, sets, tokens
+    # ------------------------------------------------------------------
+
+    async def test_get_settings_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_settings(auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_setting",
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_setting_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_setting("MaxResults", auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_setting_setting",
+            arguments={"setting": "MaxResults"},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_set_setting_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"name": "MaxResults", "value": "100"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.set_setting(body, auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_setting",
+            arguments={"body": body},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_delete_setting_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.delete_setting("MaxResults", auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "DELETE_api_v1_setting_setting",
+            arguments={"setting": "MaxResults"},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_create_agency_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"agency": "int.example"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.create_agency(body, auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_agency",
+            arguments={"body": body},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_delete_agency_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.delete_agency("int.example", auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "DELETE_api_v1_agency_agency",
+            arguments={"agency": "int.example"},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_publish_event_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"eventType": "ItemCreated"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.publish_event(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_event",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_add_permissions_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"permissions": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.add_permissions(body, auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_permission",
+            arguments={"body": body},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_delete_permissions_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"permissions": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.delete_permissions(body, auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_permission_delete",
+            arguments={"body": body},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_permissions_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"items": []}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_permissions(body, auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_permission_get",
+            arguments={"body": body},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_item_set_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_set("AG", "root-1", auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_set_agency_id",
+            arguments={"agency": "AG", "id": "root-1"},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_item_set_with_version_passes_version_argument(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_set("AG", "root-1", version=2, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_set_agency_id",
+            arguments={"agency": "AG", "id": "root-1", "version": 2},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_item_set_versioned_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_set_versioned("AG", "root-1", 4, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_set_agency_id_version",
+            arguments={"agency": "AG", "id": "root-1", "version": 4},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_item_set_typed_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_item_set_typed("AG", "root-1", 4, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_set_agency_id_version_typed",
+            arguments={"agency": "AG", "id": "root-1", "version": 4},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_create_token_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"username": "user", "password": "pass"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.create_token(body, auth_mode="none")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_token_CreateToken",
+            arguments={"body": body},
+            auth_mode="none",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_create_windows_token_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.create_windows_token(auth_mode="none")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_token_CreateWindowsToken",
+            auth_mode="none",
+        )
+        self.assertEqual(result, expected)
+
+    # ------------------------------------------------------------------
+    # Batch 4 — Replication
+    # ------------------------------------------------------------------
+
+    async def test_get_replication_targets_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_replication_targets(auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "GET_api_v1_replication_targets",
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_create_replication_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"target": "remote-1"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.create_replication(body, auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_replication",
+            arguments={"body": body},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_replication_allowed_initial_states_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"target": "remote-1"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_replication_allowed_initial_states(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_replication_allowed_initial_states",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_get_replication_allowed_transitions_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"target": "remote-1"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.get_replication_allowed_transitions(body, auth_mode="auto")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_replication_allowed_state_transitions",
+            arguments={"body": body},
+            auth_mode="auto",
+        )
+        self.assertEqual(result, expected)
+
+    async def test_request_replication_state_change_uses_expected_operation(self) -> None:
+        expected = {"status_code": 200}
+        body = {"target": "remote-1", "state": "Active"}
+        self.mock_client.call_operation = AsyncMock(return_value=expected)
+
+        result = await server.request_replication_state_change(body, auth_mode="bearer")
+
+        self.mock_client.call_operation.assert_awaited_once_with(
+            "POST_api_v1_replication_request_state_change",
+            arguments={"body": body},
+            auth_mode="bearer",
+        )
+        self.assertEqual(result, expected)
