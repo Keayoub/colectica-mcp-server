@@ -1,0 +1,81 @@
+# Colectica MCP + Purview MCP + AI Foundry Agent — local dev stack
+#
+# Usage:
+#   cp .env.example .env          # fill in your values
+#   docker compose up --build
+#
+# Services:
+#   colectica-mcp   → http://localhost:8000/mcp
+#   purview-mcp     → http://localhost:8001/mcp  (bring your own image)
+#   foundry-agent   → runs a one-shot scenario and exits
+
+services:
+
+  # ── Colectica MCP Server ──────────────────────────────────────────────────
+  colectica-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: colectica-mcp-server:latest
+    ports:
+      - "8000:8000"
+    environment:
+      COLECTICA_BASE_URL: ${COLECTICA_BASE_URL}
+      COLECTICA_USERNAME: ${COLECTICA_USERNAME:-}
+      COLECTICA_PASSWORD: ${COLECTICA_PASSWORD:-}
+      COLECTICA_BEARER_TOKEN: ${COLECTICA_BEARER_TOKEN:-}
+      COLECTICA_MCP_TRANSPORT: streamable-http
+      COLECTICA_MCP_HOST: 0.0.0.0
+      COLECTICA_MCP_PORT: "8000"
+      COLECTICA_VERIFY_SSL: ${COLECTICA_VERIFY_SSL:-true}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/mcp')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ── Purview MCP Server ────────────────────────────────────────────────────
+  # Replace image with your own Purview MCP container.
+  # Expected: exposes /mcp endpoint on port 8001.
+  purview-mcp:
+    image: ${PURVIEW_MCP_IMAGE:-purview-mcp-server:latest}
+    ports:
+      - "8001:8001"
+    environment:
+      PURVIEW_ENDPOINT: ${PURVIEW_ENDPOINT}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: "8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/mcp')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ── AI Foundry Agent (one-shot runner) ────────────────────────────────────
+  foundry-agent:
+    build:
+      context: integrations/examples/foundry_agent
+      dockerfile: Dockerfile
+    image: colectica-purview-foundry-agent:latest
+    depends_on:
+      colectica-mcp:
+        condition: service_healthy
+      purview-mcp:
+        condition: service_healthy
+    environment:
+      AZURE_AI_PROJECT_ENDPOINT: ${AZURE_AI_PROJECT_ENDPOINT}
+      COLECTICA_MCP_URL: http://colectica-mcp:8000/mcp
+      PURVIEW_MCP_URL: http://purview-mcp:8001/mcp
+      AZURE_AI_MODEL: ${AZURE_AI_MODEL:-gpt-4o}
+      # For Managed Identity in ACI/Container Apps, leave client_id empty.
+      # For local dev with service principal:
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
+    command: ["query"]   # change to: sync | lineage | drift | tags | "your question"
+    restart: "no"
