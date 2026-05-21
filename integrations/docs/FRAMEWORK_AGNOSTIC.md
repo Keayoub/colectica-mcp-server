@@ -436,12 +436,13 @@ Guidelines:
 
 ## Next Steps
 
-1. **Choose your framework** based on your use case
-2. **Follow framework-specific guide** in integrations/docs/
-3. **Implement tool execution wrapper** for your framework
-4. **Test with mock MCPs** first
-5. **Deploy real MCPs** when ready
-6. **Monitor checkpoints** for resumable syncs
+1. **Read [USE_CASES.md](./USE_CASES.md)** for concrete scenarios (metadata sync, lineage, drift detection, tag governance, natural language queries)
+2. **Choose your framework** based on your use case
+3. **Follow framework-specific guide** in integrations/docs/
+4. **Implement tool execution wrapper** for your framework
+5. **Test with mock MCPs** first
+6. **Deploy real MCPs** when ready
+7. **Monitor checkpoints** for resumable syncs
 
 ---
 

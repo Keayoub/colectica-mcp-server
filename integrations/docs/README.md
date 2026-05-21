@@ -6,12 +6,15 @@ Complete guide to orchestrating Colectica MCP and Purview MCP.
 
 ### 🎯 New Here?
 
-**Start here:** [FRAMEWORK_AGNOSTIC.md](./FRAMEWORK_AGNOSTIC.md) — Overview of all agent frameworks and which to choose
+**Start here:** [USE_CASES.md](./USE_CASES.md) — 5 concrete integration scenarios (metadata sync, lineage, drift detection, tag governance, natural language queries)
+
+**Then:** [FRAMEWORK_AGNOSTIC.md](./FRAMEWORK_AGNOSTIC.md) — Overview of all agent frameworks and which to choose
 
 ### 📋 Design & Architecture
 
 | Document | Purpose |
 |---|---|
+| [USE_CASES.md](./USE_CASES.md) | **Start here** — 5 concrete integration scenarios with code |
 | [AGENT_DEFINITION.md](./AGENT_DEFINITION.md) | Core architecture, workflows, type mapping |
 | [FRAMEWORK_AGNOSTIC.md](./FRAMEWORK_AGNOSTIC.md) | Framework comparison & selection guide |
 
@@ -155,10 +158,11 @@ See `integrations/examples/` for working code:
 
 ## Next Steps
 
-1. Read [FRAMEWORK_AGNOSTIC.md](./FRAMEWORK_AGNOSTIC.md)
-2. Choose your framework
-3. Follow framework-specific implementation guide
-4. Run the example from `integrations/examples/`
-5. Customize for your use case
+1. Read [USE_CASES.md](./USE_CASES.md)
+2. Read [FRAMEWORK_AGNOSTIC.md](./FRAMEWORK_AGNOSTIC.md)
+3. Choose your framework
+4. Follow framework-specific implementation guide
+5. Run the example from `integrations/examples/`
+6. Customize for your use case
 
 Happy integrating! 🚀

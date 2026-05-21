@@ -2,6 +2,10 @@
 
 **Purpose:** Orchestrate bidirectional integration between Colectica MCP and Purview MCP.
 
+> 📖 **Use cases:** See [USE_CASES.md](./USE_CASES.md) for five concrete integration
+> scenarios — metadata sync, lineage propagation, drift detection, tag governance
+> round-trip, and natural language cross-system queries.
+
 ⚠️ **Framework-Agnostic:** This pattern works with ANY agent framework. See [FRAMEWORK_AGNOSTIC.md](./FRAMEWORK_AGNOSTIC.md) for:
 
 - **Claude SDK** (Anthropic) — Quick start example in this repo

@@ -241,5 +241,6 @@ if __name__ == "__main__":
 
 ## See Also
 
-- [FRAMEWORK_AGNOSTIC.md](./FRAMEWORK_AGNOSTIC.md) - All frameworks comparison
+- [USE_CASES.md](./USE_CASES.md) — 5 concrete integration scenarios with code
+- [FRAMEWORK_AGNOSTIC.md](./FRAMEWORK_AGNOSTIC.md) — All frameworks comparison
 - [MCP Spec](https://modelcontextprotocol.io)
