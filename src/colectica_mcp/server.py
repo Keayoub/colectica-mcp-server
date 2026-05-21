@@ -1248,9 +1248,28 @@ def main() -> None:
         default=os.getenv("COLECTICA_MCP_MOUNT_PATH"),
         help="Mount path for streamable-http transport (optional).",
     )
+    parser.add_argument(
+        "--host",
+        default=os.getenv("COLECTICA_MCP_HOST", "127.0.0.1"),
+        help="Bind host for streamable-http transport (default: 127.0.0.1).",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.getenv("COLECTICA_MCP_PORT", "8000")),
+        help="Bind port for streamable-http transport (default: 8000).",
+    )
     args = parser.parse_args()
 
-    mcp.run(transport=args.transport, mount_path=args.mount_path)
+    if args.transport == "streamable-http":
+        mcp.run(
+            transport=args.transport,
+            mount_path=args.mount_path,
+            host=args.host,
+            port=args.port,
+        )
+    else:
+        mcp.run(transport=args.transport)
 
 
 if __name__ == "__main__":

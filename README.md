@@ -41,9 +41,14 @@ colectica-mcp --transport stdio
 
 ```powershell
 colectica-mcp --transport streamable-http --mount-path /mcp
+colectica-mcp --transport streamable-http --host 0.0.0.0 --port 9000 --mount-path /mcp
 ```
 
+Environment variables: `COLECTICA_MCP_HOST` (default `127.0.0.1`), `COLECTICA_MCP_PORT` (default `8000`).
+
 ## 4. Available MCP tools
+
+### Discovery and generic invocation
 
 - `health_check(auth_mode="auto")`
 - `list_operations(auth_mode="auto")`
@@ -55,17 +60,117 @@ colectica-mcp --transport streamable-http --mount-path /mcp
 - `call_operation_paginated(operation_id, arguments, auth_mode="auto", max_pages=20, items_path=None)`
 - `list_operation_categories(auth_mode="auto")`
 - `list_operations_by_category(category, auth_mode="auto", limit=200)`
+
+### Repository
+
 - `get_repository_info(auth_mode="auto")`
+- `get_repository_statistics(auth_mode="auto")`
+
+### Items
+
 - `get_item(arguments, auth_mode="auto")`
-- `search(arguments, auth_mode="auto")`
-- `register_item(arguments, auth_mode="auto")`
 - `get_item_by_urn(urn, auth_mode="auto")`
+- `register_item(arguments, auth_mode="auto")`
 - `register_item_body(body, auth_mode="auto")`
+- `get_items_list(body, auth_mode="auto")`
+- `get_items_list_latest(body, auth_mode="auto")`
+- `get_item_descriptions(body, auth_mode="auto")`
+- `get_item_description(agency, id, version, auth_mode="auto")`
+- `delete_items(body, auth_mode="auto")`
+- `update_item_state(body, auth_mode="auto")`
+
+### Item versions and history
+
+- `get_item_versions(agency, id, auth_mode="auto")`
+- `get_item_latest_version(agency, id, auth_mode="auto")`
+- `get_item_latest_version_by_tag(agency, id, tag, auth_mode="auto")`
+- `get_latest_version_numbers(body, auth_mode="auto")`
+- `get_item_history(agency, id, auth_mode="auto")`
+
+### DDI and JSON serialization
+
 - `get_ddi_fragment(agency, identifier, version=None, auth_mode="auto")`
 - `get_ddi_set_fragment(agency, identifier, version=None, auth_mode="auto")`
 - `get_item_json(agency, identifier, version=None, auth_mode="auto")`
 - `get_item_json_set(agency, identifier, version=None, auth_mode="auto")`
 - `get_item_json_set_filtered(body, auth_mode="auto")`
+
+### Search and query
+
+- `search(arguments, auth_mode="auto")`
+- `search_advanced(body, auth_mode="auto")`
+- `search_set(body, auth_mode="auto")`
+- `search_relationships_by_subject(body, auth_mode="auto")`
+- `search_relationships_by_subject_descriptions(body, auth_mode="auto")`
+- `search_relationships_by_object(body, auth_mode="auto")`
+- `search_relationships_by_object_descriptions(body, auth_mode="auto")`
+- `get_relationship_matrix(body, auth_mode="auto")`
+- `get_relationship_matrix_typed(body, auth_mode="auto")`
+
+### Item sets
+
+- `get_item_set(agency, id, version=None, auth_mode="auto")`
+- `get_item_set_versioned(agency, id, version, auth_mode="auto")`
+- `get_item_set_typed(agency, id, version, auth_mode="auto")`
+
+### Tags and ratings
+
+- `get_tags(agency, id, version, auth_mode="auto")`
+- `add_tag(agency, id, version, tag, auth_mode="auto")`
+- `remove_tag(agency, id, version, tag, auth_mode="auto")`
+- `get_ratings(agency, id, version, auth_mode="auto")`
+- `add_rating(agency, id, version, rating, auth_mode="auto")`
+
+### Comments
+
+- `get_item_comments(agency, id, auth_mode="auto")`
+- `add_item_comment(agency, id, version, body, auth_mode="auto")`
+- `get_comment_list(body, auth_mode="auto")`
+
+### Transactions
+
+- `create_transaction(auth_mode="auto")`
+- `get_transactions(body, auth_mode="auto")`
+- `list_transactions(body, auth_mode="auto")`
+- `commit_transaction(body, auth_mode="auto")`
+- `cancel_transaction(body, auth_mode="auto")`
+- `add_items_to_transaction(body, auth_mode="auto")`
+- `get_items_in_transaction(transaction_id, auth_mode="auto")`
+
+### Settings
+
+- `get_settings(auth_mode="auto")`
+- `get_setting(setting, auth_mode="auto")`
+- `set_setting(body, auth_mode="auto")`
+- `delete_setting(setting, auth_mode="auto")`
+
+### Agency
+
+- `create_agency(body, auth_mode="auto")`
+- `delete_agency(agency, auth_mode="auto")`
+
+### Permissions
+
+- `add_permissions(body, auth_mode="auto")`
+- `delete_permissions(body, auth_mode="auto")`
+- `get_permissions(body, auth_mode="auto")`
+
+### Events
+
+- `publish_event(body, auth_mode="auto")`
+
+### Tokens
+
+- `create_token(body, auth_mode="auto")`
+- `create_windows_token(auth_mode="auto")`
+
+### Replication
+
+- `get_replication_targets(auth_mode="auto")`
+- `create_replication(body, auth_mode="auto")`
+- `get_replication_allowed_initial_states(body, auth_mode="auto")`
+- `get_replication_allowed_transitions(body, auth_mode="auto")`
+- `request_replication_state_change(body, auth_mode="auto")`
 
 ## 5. Recommended usage flow
 
