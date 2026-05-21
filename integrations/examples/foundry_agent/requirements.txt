@@ -1,0 +1,7 @@
+# Azure AI Foundry + Colectica MCP / Purview MCP Agent
+
+azure-ai-projects>=1.0.0b10
+azure-identity>=1.17.0
+
+# Colectica MCP server (runs as a subprocess or remote HTTPS endpoint)
+colectica-mcp-server>=0.1.6
