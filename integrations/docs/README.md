@@ -24,6 +24,8 @@ Choose your framework:
 
 | Framework | Document | Best For |
 |---|---|---|
+| **GitHub Copilot Agent** | [`integrations/agents/ColecticaPurviewAgent.md`](../agents/ColecticaPurviewAgent.md) | VS Code / Copilot CLI, 5 skills built-in |
+| **Azure Agent SDK** | [`examples/azure_agent_sdk/`](../examples/azure_agent_sdk/README.md) | AI Foundry, Container Apps |
 | **Claude SDK** | [In repo: `integrations/agents/colectica_purview_agent.py`](../agents/colectica_purview_agent.py) | Quick start, prototyping |
 | **AI Foundry** | [AGENT_FOUNDRY.md](./AGENT_FOUNDRY.md) | Enterprise Azure, managed services |
 | **LangChain** | [AGENT_LANGCHAIN.md](./AGENT_LANGCHAIN.md) | Complex workflows, local execution |

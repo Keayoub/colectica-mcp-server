@@ -1,0 +1,4 @@
+azure-ai-projects>=1.0.0b4
+azure-identity>=1.16.0
+python-dotenv>=1.1.0
+colectica-mcp-server>=0.1.6

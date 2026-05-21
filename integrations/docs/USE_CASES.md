@@ -114,6 +114,12 @@ dry_run=true, then execute and save a checkpoint.
 **Goal:** Register how survey items relate to each other in Purview's lineage
 graph so analysts can trace the origin and transformation of each variable.
 
+### When to use
+
+- Compliance requirements mandate lineage tracking
+- Data stewards need to trace variable provenance from instrument to dataset
+- Impact analysis: "which datasets are affected if I change this variable?"
+
 ### MCP tools used
 
 | Step | MCP | Tool |
@@ -159,12 +165,35 @@ async def propagate_lineage(agency: str, root_id: str):
         )
 ```
 
+### Sample agent prompt
+
+```
+For Instrument "my-instrument-id" in agency "int.example", fetch the full
+relationship matrix and register lineage edges in Purview showing how
+Variables flow from the Instrument to each DataSet.
+```
+
 ---
 
 ## Scenario 3 — Consistency Validation / Drift Detection
 
 **Goal:** Detect metadata drift — items that exist in Colectica but are
 missing or outdated in Purview — and report or remediate automatically.
+
+### When to use
+
+- Scheduled governance audit (daily/weekly)
+- Post-release validation after a Colectica batch update
+- Incident response: "Purview shows data that no longer exists in Colectica"
+
+### Drift classification
+
+| Status | Meaning | Recommended action |
+|---|---|---|
+| `in-sync` | Purview matches Colectica | None |
+| `stale` | Purview exists but attributes differ | Update Purview entity |
+| `missing` | In Colectica, not in Purview | Import to Purview (Scenario 1) |
+| `orphan` | In Purview, not in Colectica | Flag for review or delete |
 
 ### MCP tools used
 
@@ -213,6 +242,14 @@ async def detect_drift(since_timestamp: str):
 
     return {"missing": len(missing), "stale": len(stale),
             "missing_items": missing, "stale_items": stale}
+```
+
+### Sample agent prompt
+
+```
+Find all Colectica items modified since 2026-05-01, check each against
+Purview for drift, produce a report grouped by status (in-sync / stale /
+missing / orphan), and auto-update stale Purview entities.
 ```
 
 ---
