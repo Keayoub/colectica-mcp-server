@@ -49,9 +49,13 @@ Every Colectica item is addressed by the triplet **(agency, identifier, version)
 | Latest version | pass `agency` + `id` | — | omit / `null` → server resolves |
 | By tag label | `get_item_latest_version_by_tag(agency, id, tag)` | | |
 
-**DDI item type codes** used in `itemTypes` filter or `typeCode` argument:
+**DDI item type names** used in `item_types` / `ItemTypes` filter:
 
-| Code | Description |
+The server resolves friendly DDI type names to the UUIDs required by the
+Colectica API automatically.  Call `get_item_types()` to see the full list
+of names and counts available in the connected repository.  Common names:
+
+| Name | Description |
 |------|-------------|
 | `Group` | Study group / collection |
 | `ResourcePackage` | Reusable resource container |
@@ -70,6 +74,9 @@ Every Colectica item is addressed by the triplet **(agency, identifier, version)
 | `LogicalProduct` | Logical data model |
 | `DataRelationship` | Variable-to-dataset linkage |
 
+**Important:** pass the `name` string directly — do NOT look up or supply
+UUIDs manually.  If a name is unrecognised the API will return a clear error.
+
 ---
 
 ## 4 · Named Workflows
@@ -84,16 +91,17 @@ Every Colectica item is addressed by the triplet **(agency, identifier, version)
 
 ### Workflow B — Find and read an item
 ```
-1. search(arguments={"SearchTerms": "MIDUS", "ItemTypes": ["StudyUnit"], "MaxResults": 10})
+1. get_item_types()  → discover available type names and their counts
+2. search(arguments={"body": {"SearchTerms": ["MIDUS"], "ItemTypes": ["StudyUnit"], "MaxResults": 10}})
    → note AgencyId, Identifier from result
-2. get_item(arguments={"agency": "<AgencyId>", "id": "<Identifier>", "version": 1})
-3. get_item_set(agency="<AgencyId>", id="<Identifier>", version=1)
+3. get_item(arguments={"agency": "<AgencyId>", "id": "<Identifier>", "version": 1})
+4. get_item_set(agency="<AgencyId>", id="<Identifier>", version=1)
    → returns root item + all reachable children
 ```
 
 ### Workflow C — Explore variable relationships
 ```
-1. search(arguments={"SearchTerms": "age", "ItemTypes": ["Variable"], "MaxResults": 5})
+1. search(arguments={"body": {"SearchTerms": ["age"], "ItemTypes": ["Variable"], "MaxResults": 5}})
    → note agency + id of target variable
 2. search_relationships_by_object(
        body={"Agency": "<agency>", "Identifier": "<id>", "Version": 1}

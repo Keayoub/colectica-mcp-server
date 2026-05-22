@@ -5,6 +5,7 @@ import argparse
 import asyncio
 import os
 import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
@@ -108,6 +109,104 @@ async def _call_first_available_operation(
     if last_error is not None:
         raise last_error
     raise ColecticaApiError("No operation identifiers were provided.")
+
+
+# ---------------------------------------------------------------------------
+# Item-type helpers
+# ---------------------------------------------------------------------------
+
+_UUID_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    re.IGNORECASE,
+)
+
+# Module-level cache: {lowercase_type_name: guid}
+# Populated on first call to _get_item_type_guid_map().
+_item_type_guids_cache: dict[str, str] | None = None
+_item_type_guids_lock = asyncio.Lock()
+
+
+async def _build_item_type_guid_map(client: ColecticaApiClient) -> dict[str, str]:
+    """Discover item-type name→GUID mapping from the live Colectica API.
+
+    Queries the statistics endpoint to enumerate all type GUIDs present in the
+    repository, then fetches one DDI fragment per type and reads the first
+    child element tag (e.g. ``QuestionItem``, ``Variable``) as the type name.
+    Returns ``{lowercase_name: guid}`` for use in :func:`_resolve_item_types`.
+    """
+    stats = await client.call_operation(
+        _colectica_op("GET", "/api/v1/repository/statistics"), arguments={}
+    )
+    type_guids: dict[str, int] = stats.get("body", {}).get("ItemCounts", {})
+
+    mapping: dict[str, str] = {}
+    for guid in type_guids:
+        try:
+            search = await client.call_operation(
+                _colectica_op("POST", "/api/v1/_query"),
+                arguments={"body": {"ItemTypes": [guid], "MaxResults": 1}},
+            )
+            results = search.get("body", {}).get("Results", [])
+            if not results:
+                continue
+            r = results[0]
+            ddi = await client.call_operation(
+                _colectica_op("GET", "/api/v1/ddi/{agency}/{identifier}/{version}"),
+                arguments={
+                    "agency": r["AgencyId"],
+                    "identifier": r["Identifier"],
+                    "version": r["Version"],
+                },
+            )
+            xml_text = ddi.get("body", "")
+            root = ET.fromstring(xml_text)
+            # The Fragment element's first child is the actual DDI type element.
+            first_child = next(iter(root), None)
+            if first_child is None:
+                continue
+            tag = first_child.tag
+            if "}" in tag:
+                tag = tag.split("}")[1]
+            mapping[tag.lower()] = guid
+        except Exception:  # noqa: BLE001
+            # Skip types that fail to resolve; they remain UUID-only.
+            continue
+
+    return mapping
+
+
+async def _get_item_type_guid_map(client: ColecticaApiClient) -> dict[str, str]:
+    """Return the cached item-type name→GUID map, building it on first call."""
+    global _item_type_guids_cache
+    if _item_type_guids_cache is not None:
+        return _item_type_guids_cache
+    async with _item_type_guids_lock:
+        # Double-checked locking: another coroutine may have built it while we waited.
+        if _item_type_guids_cache is None:
+            _item_type_guids_cache = await _build_item_type_guid_map(client)
+    return _item_type_guids_cache
+
+
+async def _resolve_item_types(
+    types: list[str], client: ColecticaApiClient
+) -> list[str]:
+    """Resolve DDI type names to GUIDs expected by the Colectica search API.
+
+    Values that are already valid UUIDs are passed through unchanged.
+    Friendly names (e.g. ``"Variable"``, ``"QuestionItem"``) are looked up
+    in the live type map.  Unrecognised names are passed through as-is so the
+    API can return a meaningful error rather than silently dropping them.
+    """
+    if not types:
+        return types
+    guid_map = await _get_item_type_guid_map(client)
+    resolved: list[str] = []
+    for t in types:
+        if _UUID_RE.match(t):
+            resolved.append(t)
+        else:
+            resolved.append(guid_map.get(t.lower(), t))
+    return resolved
 
 
 @mcp.tool()
@@ -399,14 +498,31 @@ async def get_item(arguments: dict[str, Any], auth_mode: str = "auto") -> dict[s
 
 @mcp.tool()
 async def search(arguments: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
-    """Convenience wrapper for operationId `Search`."""
+    """Convenience wrapper for operationId `Search`.
+
+    Accepts friendly DDI type names (e.g. ``"Variable"``, ``"QuestionItem"``)
+    in ``arguments["body"]["ItemTypes"]`` and resolves them to the UUIDs
+    required by the Colectica API automatically.
+
+    Note: ``arguments["body"]["SearchTerms"]`` must be a list of strings,
+    e.g. ``["age"]``, not a plain string. A bare string is coerced automatically.
+    """
     cfg = _resolve_config()
     client = ColecticaApiClient(cfg)
+    resolved_auth_mode = _resolve_auth_mode(auth_mode)
+    body = arguments.get("body", {})
+    if isinstance(body, dict):
+        # Coerce SearchTerms string → list as required by the Colectica API
+        if isinstance(body.get("SearchTerms"), str):
+            body["SearchTerms"] = [body["SearchTerms"]]
+        if body.get("ItemTypes"):
+            body["ItemTypes"] = await _resolve_item_types(body["ItemTypes"], client)
+        arguments = {**arguments, "body": body}
     return await _call_first_available_operation(
         client,
         ["Search", _colectica_op("POST", "/api/v1/_query")],
         arguments=arguments,
-        auth_mode=_resolve_auth_mode(auth_mode),
+        auth_mode=resolved_auth_mode,
     )
 
 
@@ -718,14 +834,22 @@ async def add_rating(
 
 @mcp.tool()
 async def search_advanced(body: dict[str, Any], auth_mode: str = "auto") -> dict[str, Any]:
-    """Search repository with advanced search options."""
+    """Search repository with advanced search options.
+
+    Accepts friendly DDI type names (e.g. ``"Variable"``, ``"QuestionItem"``)
+    in ``body["ItemTypes"]`` and resolves them to the UUIDs required by the
+    Colectica API automatically.
+    """
     cfg = _resolve_config()
     client = ColecticaApiClient(cfg)
+    resolved_auth_mode = _resolve_auth_mode(auth_mode)
+    if body.get("ItemTypes"):
+        body = {**body, "ItemTypes": await _resolve_item_types(body["ItemTypes"], client)}
     return await _call_first_available_operation(
         client,
         ["SearchAdvanced", _colectica_op("POST", "/api/v1/_query/advanced")],
         arguments={"body": body},
-        auth_mode=_resolve_auth_mode(auth_mode),
+        auth_mode=resolved_auth_mode,
     )
 
 
@@ -752,6 +876,46 @@ async def get_repository_statistics(auth_mode: str = "auto") -> dict[str, Any]:
         ["GetRepositoryStatistics", _colectica_op("GET", "/api/v1/repository/statistics")],
         auth_mode=_resolve_auth_mode(auth_mode),
     )
+
+
+@mcp.tool()
+async def get_item_types(auth_mode: str = "auto") -> dict[str, Any]:
+    """Return all DDI item types available in this Colectica repository.
+
+    Queries the live API to discover item types and maps each friendly DDI
+    type name (e.g. ``"Variable"``, ``"QuestionItem"``) to its UUID.  The
+    result is cached for the lifetime of the server process.
+
+    Use the returned names directly in the ``item_types`` / ``ItemTypes``
+    parameter of ``search``, ``search_advanced``, and ``search_by_text``
+    — the search tools resolve them to UUIDs automatically.
+    """
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    _ = _resolve_auth_mode(auth_mode)
+    guid_map = await _get_item_type_guid_map(client)
+    # Also attach counts from statistics for convenience
+    stats = await client.call_operation(
+        _colectica_op("GET", "/api/v1/repository/statistics"), arguments={}
+    )
+    counts: dict[str, int] = stats.get("body", {}).get("ItemCounts", {})
+    # Invert guid_map to guid→name for the count lookup
+    guid_to_name = {v: k for k, v in guid_map.items()}
+    return {
+        "item_types": [
+            {
+                "name": guid_to_name.get(guid, "(unknown)"),
+                "guid": guid,
+                "count": count,
+            }
+            for guid, count in sorted(counts.items(), key=lambda x: -x[1])
+        ],
+        "total_types": len(counts),
+        "note": (
+            "Pass 'name' values directly to item_types / ItemTypes in search tools; "
+            "they are resolved to GUIDs automatically."
+        ),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1319,21 +1483,22 @@ async def search_by_text(
         raise ValueError("max_results must be between 1 and 1000")
 
     body: dict[str, Any] = {
-        "SearchTerms": query.strip(),
+        "SearchTerms": [query.strip()],
         "MaxResults": max_results,
     }
-    if item_types:
-        body["ItemTypes"] = item_types
     if agency_ids:
         body["AgencyIds"] = agency_ids
 
     cfg = _resolve_config()
     client = ColecticaApiClient(cfg)
+    resolved_auth_mode = _resolve_auth_mode(auth_mode)
+    if item_types:
+        body["ItemTypes"] = await _resolve_item_types(item_types, client)
     return await _call_first_available_operation(
         client,
         ["Search", _colectica_op("POST", "/api/v1/_query")],
         arguments={"body": body},
-        auth_mode=_resolve_auth_mode(auth_mode),
+        auth_mode=resolved_auth_mode,
     )
 
 

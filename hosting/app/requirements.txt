@@ -1,4 +1,4 @@
 azure-functions>=1.21.0
-colectica-mcp-server>=0.2.1
+colectica-mcp-server>=0.2.2
 httpx>=0.28.0
 python-dotenv>=1.0.0
