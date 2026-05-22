@@ -5,6 +5,7 @@ param(
     [string]$Location = "eastus"
 )
 
+
 $ErrorActionPreference = "Stop"
 $ScriptDir = $PSScriptRoot
 
