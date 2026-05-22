@@ -136,23 +136,30 @@ if ($status -and -not $Force) {
   exit 5
 }
 
-$pyproject = Join-Path $repoRoot "pyproject.toml"
-$readme = Join-Path $repoRoot "README.md"
+$pyproject    = Join-Path $repoRoot "pyproject.toml"
+$versionFile  = Join-Path $repoRoot "src\colectica_mcp\__version__.py"
+$funcReqs     = Join-Path $repoRoot "hosting\app\requirements.txt"
+$readme       = Join-Path $repoRoot "README.md"
 
 if (-not (Test-Path $pyproject -PathType Leaf)) {
   Write-Err "pyproject.toml not found at $pyproject"
   exit 6
 }
 
-$pytext = Get-Content -Raw -Path $pyproject
-$matchInfo = Select-String -Path $pyproject -Pattern '^[ \t]*version[ \t]*=[ \t]*"([^\"]+)"' -AllMatches
-if (-not $matchInfo -or $matchInfo.Count -eq 0) {
-  Write-Err "Could not find current version in pyproject.toml"
+if (-not (Test-Path $versionFile -PathType Leaf)) {
+  Write-Err "__version__.py not found at $versionFile"
+  exit 6
+}
+
+# Read current version from __version__.py (source of truth)
+$verText   = [System.IO.File]::ReadAllText($versionFile)
+$matchInfo = [regex]::Match($verText, '__version__\s*=\s*"([^"]+)"')
+if (-not $matchInfo.Success) {
+  Write-Err "Could not find __version__ in $versionFile"
   exit 7
 }
 
-$firstMatch = $matchInfo[0].Matches[0]
-$oldVersion = $firstMatch.Groups[1].Value
+$oldVersion = $matchInfo.Groups[1].Value
 Write-Info "Current version: $oldVersion -> New version: $NewVersion"
 
 if ($oldVersion -eq $NewVersion) {
@@ -160,18 +167,22 @@ if ($oldVersion -eq $NewVersion) {
   exit 0
 }
 
-$patternPy = '(version\s*=\s*")([^"]+)(")'
-$newPy = [regex]::Replace(
-  $pytext,
-  $patternPy,
-  {
-    param($m)
-    return $m.Groups[1].Value + $NewVersion + $m.Groups[3].Value
-  },
-  [System.Text.RegularExpressions.RegexOptions]::Multiline
-)
 $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
-[System.IO.File]::WriteAllText($pyproject, $newPy, $Utf8NoBomEncoding)
+
+# Update __version__.py
+$newVerText = [regex]::Replace($verText, '(__version__\s*=\s*")([^"]+)(")', "`${1}$NewVersion`${3}")
+[System.IO.File]::WriteAllText($versionFile, $newVerText, $Utf8NoBomEncoding)
+Write-Info "Updated __version__.py -> $NewVersion"
+
+# Update hosting/app/requirements.txt if it pins colectica-mcp-server
+if (Test-Path $funcReqs -PathType Leaf) {
+  $reqText    = [System.IO.File]::ReadAllText($funcReqs)
+  $newReqText = [regex]::Replace($reqText, '(colectica-mcp-server>=)[0-9]+\.[0-9]+\.[0-9]+', "`${1}$NewVersion")
+  if ($newReqText -ne $reqText) {
+    [System.IO.File]::WriteAllText($funcReqs, $newReqText, $Utf8NoBomEncoding)
+    Write-Info "Updated hosting/app/requirements.txt -> colectica-mcp-server>=$NewVersion"
+  }
+}
 
 if (Test-Path $readme) {
   $readmeText = [System.IO.File]::ReadAllText($readme, $Utf8NoBomEncoding)
@@ -188,11 +199,10 @@ if ($Build) {
 }
 
 Write-Info "Staging release artifacts..."
-if (Test-Path $readme) {
-  git add $pyproject $readme $releaseNotesFile
-} else {
-  git add $pyproject $releaseNotesFile
-}
+$filesToStage = @($pyproject, $versionFile, $releaseNotesFile)
+if (Test-Path $funcReqs) { $filesToStage += $funcReqs }
+if (Test-Path $readme)   { $filesToStage += $readme }
+git add $filesToStage
 if ($LASTEXITCODE -ne 0) { Write-Err "git add failed"; exit 8 }
 
 $commitMsg = "Bump version to $NewVersion"
