@@ -17,6 +17,26 @@ from .client import ColecticaApiError
 from .config import AuthMode, ColecticaConfig
 from .__version__ import __version__ as _SERVER_VERSION
 
+# ---------------------------------------------------------------------------
+# Utils sub-package imports
+# ---------------------------------------------------------------------------
+from .utils._internal import (
+    _build_item_type_guid_map,
+    _colectica_op,
+    _get_item_type_guid_map,
+    _resolve_item_types,
+    _UUID_RE,
+)
+from .utils import (
+    batch as _batch,
+    composite as _composite,
+    ddi_parser as _ddi_parser,
+    harmonization as _harmonization,
+    importer as _importer,
+    quality as _quality,
+    search_helpers as _search_helpers,
+)
+
 load_dotenv()
 
 
@@ -55,13 +75,6 @@ def _resolve_auth_mode(auth_mode: str) -> AuthMode:
 def _contains_any_term(text: str, terms: list[str]) -> bool:
     normalized = text.lower()
     return any(term in normalized for term in terms)
-
-
-def _colectica_op(method: str, path: str) -> str:
-    normalized_method = re.sub(r"[^A-Za-z0-9]", "_", method.upper())
-    normalized_path = re.sub(r"[^A-Za-z0-9]", "_", path)
-    normalized_path = re.sub(r"_+", "_", normalized_path).strip("_")
-    return f"{normalized_method}_{normalized_path}"
 
 
 def _derive_operation_category(path: str) -> str:
@@ -109,104 +122,6 @@ async def _call_first_available_operation(
     if last_error is not None:
         raise last_error
     raise ColecticaApiError("No operation identifiers were provided.")
-
-
-# ---------------------------------------------------------------------------
-# Item-type helpers
-# ---------------------------------------------------------------------------
-
-_UUID_RE = re.compile(
-    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-    re.IGNORECASE,
-)
-
-# Module-level cache: {lowercase_type_name: guid}
-# Populated on first call to _get_item_type_guid_map().
-_item_type_guids_cache: dict[str, str] | None = None
-_item_type_guids_lock = asyncio.Lock()
-
-
-async def _build_item_type_guid_map(client: ColecticaApiClient) -> dict[str, str]:
-    """Discover item-type name→GUID mapping from the live Colectica API.
-
-    Queries the statistics endpoint to enumerate all type GUIDs present in the
-    repository, then fetches one DDI fragment per type and reads the first
-    child element tag (e.g. ``QuestionItem``, ``Variable``) as the type name.
-    Returns ``{lowercase_name: guid}`` for use in :func:`_resolve_item_types`.
-    """
-    stats = await client.call_operation(
-        _colectica_op("GET", "/api/v1/repository/statistics"), arguments={}
-    )
-    type_guids: dict[str, int] = stats.get("body", {}).get("ItemCounts", {})
-
-    mapping: dict[str, str] = {}
-    for guid in type_guids:
-        try:
-            search = await client.call_operation(
-                _colectica_op("POST", "/api/v1/_query"),
-                arguments={"body": {"ItemTypes": [guid], "MaxResults": 1}},
-            )
-            results = search.get("body", {}).get("Results", [])
-            if not results:
-                continue
-            r = results[0]
-            ddi = await client.call_operation(
-                _colectica_op("GET", "/api/v1/ddi/{agency}/{identifier}/{version}"),
-                arguments={
-                    "agency": r["AgencyId"],
-                    "identifier": r["Identifier"],
-                    "version": r["Version"],
-                },
-            )
-            xml_text = ddi.get("body", "")
-            root = ET.fromstring(xml_text)
-            # The Fragment element's first child is the actual DDI type element.
-            first_child = next(iter(root), None)
-            if first_child is None:
-                continue
-            tag = first_child.tag
-            if "}" in tag:
-                tag = tag.split("}")[1]
-            mapping[tag.lower()] = guid
-        except Exception:  # noqa: BLE001
-            # Skip types that fail to resolve; they remain UUID-only.
-            continue
-
-    return mapping
-
-
-async def _get_item_type_guid_map(client: ColecticaApiClient) -> dict[str, str]:
-    """Return the cached item-type name→GUID map, building it on first call."""
-    global _item_type_guids_cache
-    if _item_type_guids_cache is not None:
-        return _item_type_guids_cache
-    async with _item_type_guids_lock:
-        # Double-checked locking: another coroutine may have built it while we waited.
-        if _item_type_guids_cache is None:
-            _item_type_guids_cache = await _build_item_type_guid_map(client)
-    return _item_type_guids_cache
-
-
-async def _resolve_item_types(
-    types: list[str], client: ColecticaApiClient
-) -> list[str]:
-    """Resolve DDI type names to GUIDs expected by the Colectica search API.
-
-    Values that are already valid UUIDs are passed through unchanged.
-    Friendly names (e.g. ``"Variable"``, ``"QuestionItem"``) are looked up
-    in the live type map.  Unrecognised names are passed through as-is so the
-    API can return a meaningful error rather than silently dropping them.
-    """
-    if not types:
-        return types
-    guid_map = await _get_item_type_guid_map(client)
-    resolved: list[str] = []
-    for t in types:
-        if _UUID_RE.match(t):
-            resolved.append(t)
-        else:
-            resolved.append(guid_map.get(t.lower(), t))
-    return resolved
 
 
 @mcp.tool()
@@ -1541,6 +1456,625 @@ async def get_item_summary(
         "latest_version": latest_result.get("body"),
         "history": history_result.get("body"),
     }
+
+
+# ===========================================================================
+# Advanced utility tools (Batch 6 — implemented in utils/ sub-package)
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# DDI Parser tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+async def parse_ddi_item(xml_text: str) -> dict[str, Any]:
+    """Parse a raw DDI 3.x Fragment XML string into a structured JSON dict.
+
+    Extracts type name, URN, agency, id, version, multilingual labels,
+    descriptions, names, and all *Reference child elements.  No network call
+    is made — all parsing is client-side.
+
+    Parameters
+    ----------
+    xml_text:
+        Raw DDI Fragment XML as returned by ``get_ddi_fragment``.
+    """
+    return _ddi_parser.parse_ddi_item(xml_text)
+
+
+@mcp.tool()
+async def extract_variable_stats(xml_text: str) -> dict[str, Any]:
+    """Parse a VariableStatistics DDI fragment into a structured statistics dict.
+
+    Extracts the variable reference, total responses, summary statistics
+    (min, max, mean, etc.) and per-category frequency counts.
+
+    Parameters
+    ----------
+    xml_text:
+        Raw DDI Fragment XML for a VariableStatistics item.
+    """
+    return _ddi_parser.extract_variable_stats(xml_text)
+
+
+@mcp.tool()
+async def get_multilingual_labels(xml_text: str) -> dict[str, Any]:
+    """Extract all multilingual label, description, and name variants from a DDI XML string.
+
+    Useful for translation gap analysis — returns every ``xml:lang`` variant
+    found in the fragment along with a sorted list of all encountered language
+    codes.
+
+    Parameters
+    ----------
+    xml_text:
+        Raw DDI Fragment XML string.
+    """
+    return _ddi_parser.get_multilingual_labels(xml_text)
+
+
+@mcp.tool()
+async def validate_ddi_fragment(xml_text: str) -> dict[str, Any]:
+    """Validate a DDI Fragment XML string for structural correctness.
+
+    Checks that the XML is well-formed, has a ``Fragment`` root element,
+    contains exactly one typed child element, and that child has the required
+    ``r:URN``, ``r:Agency``, ``r:ID``, and ``r:Version`` elements.
+
+    Parameters
+    ----------
+    xml_text:
+        DDI Fragment XML string to validate.
+    """
+    return _ddi_parser.validate_ddi_fragment(xml_text)
+
+
+# ---------------------------------------------------------------------------
+# Composite navigation tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+async def get_study_outline(
+    agency: str,
+    id: str,
+    version: int | None = None,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Return a hierarchical type-grouped outline of all items in a study set.
+
+    Fetches the full typed item set for the given identifier, groups children
+    by DDI type (Variable, QuestionItem, DataCollection, etc.), and resolves
+    human-readable labels for each item.
+
+    Parameters
+    ----------
+    agency:
+        Agency identifier of the root item (e.g. StudyUnit).
+    id:
+        GUID of the root item.
+    version:
+        Version number.  Defaults to 1 if omitted.
+    auth_mode:
+        Authentication mode: ``"auto"``, ``"basic"``, ``"bearer"``, ``"none"``.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _composite.get_study_outline(client, agency, id, version, _resolve_auth_mode(auth_mode))
+
+
+@mcp.tool()
+async def get_codebook_for_variable(
+    agency: str,
+    id: str,
+    version: int | None = None,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Retrieve a Variable together with its full codebook (codes and categories).
+
+    Fetches the variable DDI, locates its CategoryScheme or CodeList reference,
+    then fetches that scheme and returns the complete list of codes with labels.
+
+    Parameters
+    ----------
+    agency:
+        Agency identifier of the Variable.
+    id:
+        GUID of the Variable item.
+    version:
+        Version number.  Defaults to 1 if omitted.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _composite.get_codebook_for_variable(client, agency, id, version, _resolve_auth_mode(auth_mode))
+
+
+@mcp.tool()
+async def get_question_with_responses(
+    agency: str,
+    id: str,
+    version: int | None = None,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Retrieve a QuestionItem with its question text and full response domain.
+
+    Parses the DDI fragment to extract all language variants of the question
+    text and identifies the response domain type (CodeDomain, TextDomain,
+    NumericDomain).  For CodeDomain questions the associated codes are fetched.
+
+    Parameters
+    ----------
+    agency:
+        Agency identifier of the QuestionItem.
+    id:
+        GUID of the QuestionItem.
+    version:
+        Version number.  Defaults to 1 if omitted.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _composite.get_question_with_responses(client, agency, id, version, _resolve_auth_mode(auth_mode))
+
+
+@mcp.tool()
+async def find_variables_by_concept(
+    concept_agency: str,
+    concept_id: str,
+    concept_version: int = 1,
+    max_results: int = 50,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Find all Variable items that reference a given Concept.
+
+    Uses the relationship-by-object endpoint to locate every item pointing to
+    the specified concept, then filters the results to Variable type only.
+
+    Parameters
+    ----------
+    concept_agency:
+        Agency of the Concept item.
+    concept_id:
+        GUID of the Concept.
+    concept_version:
+        Version of the Concept (default 1).
+    max_results:
+        Maximum number of Variables to return.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _composite.find_variables_by_concept(
+        client, concept_agency, concept_id, concept_version, max_results,
+        _resolve_auth_mode(auth_mode),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Harmonization tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+async def compare_item_versions(
+    agency: str,
+    id: str,
+    version1: int,
+    version2: int,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Compare two versions of the same DDI item and report what changed.
+
+    Fetches DDI fragments for both versions in parallel, then diffs labels,
+    descriptions, names, and references.
+
+    Parameters
+    ----------
+    agency:
+        Agency of the item.
+    id:
+        GUID of the item.
+    version1:
+        First (older) version number.
+    version2:
+        Second (newer) version number.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _harmonization.compare_item_versions(
+        client, agency, id, version1, version2, _resolve_auth_mode(auth_mode)
+    )
+
+
+@mcp.tool()
+async def find_harmonizable_variables(
+    agency: str,
+    id: str,
+    version: int | None = None,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Find Variables that share the same Concept or CategoryScheme as the given variable.
+
+    Useful for discovering cross-study harmonization candidates.  Fetches the
+    target variable, extracts its concept and category-scheme references, then
+    queries for other Variables pointing to the same items.
+
+    Parameters
+    ----------
+    agency:
+        Agency of the source Variable.
+    id:
+        GUID of the source Variable.
+    version:
+        Version number.  Defaults to 1 if omitted.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _harmonization.find_harmonizable_variables(
+        client, agency, id, version, _resolve_auth_mode(auth_mode)
+    )
+
+
+@mcp.tool()
+async def get_concept_usage(
+    concept_agency: str,
+    concept_id: str,
+    concept_version: int = 1,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Report all DDI items that reference a given Concept, grouped by type.
+
+    Useful for impact analysis before modifying a shared concept.  Returns a
+    breakdown by item type (Variable, QuestionItem, etc.) and the full list of
+    referencing identifiers.
+
+    Parameters
+    ----------
+    concept_agency:
+        Agency of the Concept.
+    concept_id:
+        GUID of the Concept.
+    concept_version:
+        Version of the Concept (default 1).
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _harmonization.get_concept_usage(
+        client, concept_agency, concept_id, concept_version, _resolve_auth_mode(auth_mode)
+    )
+
+
+# ---------------------------------------------------------------------------
+# Batch tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+async def batch_get_items(
+    items: list[dict[str, Any]],
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Fetch multiple DDI items in parallel and return aggregated results.
+
+    Fires concurrent GET requests for all supplied items and reports successes
+    and failures separately.
+
+    Parameters
+    ----------
+    items:
+        List of ``{"agency": "...", "id": "...", "version": 1}`` dicts.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _batch.batch_get_items(client, items, _resolve_auth_mode(auth_mode))
+
+
+@mcp.tool()
+async def bulk_tag_by_search(
+    search_body: dict[str, Any],
+    tag: str,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Run a search and apply a tag to every matching item.
+
+    Auto-paginates through all search results (up to 10 000) and fires
+    concurrent tag PUT requests.
+
+    Parameters
+    ----------
+    search_body:
+        Standard ``SearchRequest`` body dict (same as ``search``).
+    tag:
+        Tag string to apply to every matched item.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _batch.bulk_tag_by_search(client, search_body, tag, _resolve_auth_mode(auth_mode))
+
+
+@mcp.tool()
+async def export_search_to_csv(
+    search_body: dict[str, Any],
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Run a search and export all results as a CSV string.
+
+    Auto-paginates to collect up to 10 000 results.  Each CSV row contains:
+    ``urn``, ``item_type``, ``agency``, ``identifier``, ``version``,
+    ``label_en``.
+
+    Parameters
+    ----------
+    search_body:
+        Standard ``SearchRequest`` body dict (same as ``search``).
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _batch.export_search_to_csv(client, search_body, _resolve_auth_mode(auth_mode))
+
+
+# ---------------------------------------------------------------------------
+# Quality / audit tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+async def audit_item_completeness(
+    items: list[dict[str, Any]],
+    language: str = "en-US",
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Audit a list of DDI items for metadata completeness.
+
+    For each item fetches its DDI fragment and checks: label present in the
+    requested language, description present, and (for Variables) Concept and
+    CategoryScheme references exist.
+
+    Parameters
+    ----------
+    items:
+        List of ``{"agency": "...", "id": "...", "version": 1}`` dicts.
+    language:
+        BCP-47 language tag to check (e.g. ``"en-US"``).  Pass ``""`` to
+        accept any language.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _quality.audit_item_completeness(
+        client, items, language, _resolve_auth_mode(auth_mode)
+    )
+
+
+@mcp.tool()
+async def find_items_without_label(
+    item_type: str,
+    agency: str = "",
+    language: str = "en-US",
+    max_results: int = 200,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Search for items of a given type that are missing a label in a specific language.
+
+    Runs a type-filtered search and inspects each result's inline label dict
+    to identify items lacking the requested language.
+
+    Parameters
+    ----------
+    item_type:
+        DDI type name (e.g. ``"Variable"``) or GUID.
+    agency:
+        Agency to restrict results.  Pass ``""`` for all agencies.
+    language:
+        BCP-47 language code to check (e.g. ``"en-US"``).
+    max_results:
+        Maximum items to scan (up to 1 000 per call).
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _quality.find_items_without_label(
+        client, item_type, agency, language, max_results, _resolve_auth_mode(auth_mode)
+    )
+
+
+# ---------------------------------------------------------------------------
+# Importer tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+async def create_variable_from_dict(
+    variable_data: dict[str, Any],
+    agency: str,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Create a new DDI 3.3 Variable item in the repository.
+
+    Builds a minimal DDI 3.3 XML fragment and registers it via the transaction
+    API (create → add → commit).
+
+    Parameters
+    ----------
+    variable_data:
+        Dict containing:
+        ``name`` (required), ``label``, ``description``, ``concept_guid``,
+        ``language`` (default ``"en-US"``), ``version`` (default 1).
+    agency:
+        Target Colectica agency identifier.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _importer.create_variable_from_dict(
+        client, variable_data, agency, _resolve_auth_mode(auth_mode)
+    )
+
+
+@mcp.tool()
+async def create_question_item(
+    question_data: dict[str, Any],
+    agency: str,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Create a new DDI 3.3 QuestionItem in the repository.
+
+    Builds a minimal DDI 3.3 XML fragment and registers it via the transaction
+    API.
+
+    Parameters
+    ----------
+    question_data:
+        Dict containing:
+        ``question_text`` (required), ``label``, ``description``,
+        ``response_type`` (``"text"`` or ``"numeric"``, default ``"text"``),
+        ``language`` (default ``"en-US"``), ``version`` (default 1).
+    agency:
+        Target Colectica agency identifier.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _importer.create_question_item(
+        client, question_data, agency, _resolve_auth_mode(auth_mode)
+    )
+
+
+@mcp.tool()
+async def import_variables_from_csv_text(
+    csv_text: str,
+    agency: str,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Bulk-import Variables from a CSV string in a single atomic transaction.
+
+    Expected CSV columns (header row required):
+    ``name``, ``label``, ``description`` (optional), ``concept_guid``
+    (optional), ``language`` (optional, defaults to ``"en-US"``).
+
+    All rows are submitted in one transaction — if it fails nothing is
+    committed.
+
+    Parameters
+    ----------
+    csv_text:
+        Full CSV content as a string, including a header row.
+    agency:
+        Target Colectica agency identifier.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _importer.import_variables_from_csv_text(
+        client, csv_text, agency, _resolve_auth_mode(auth_mode)
+    )
+
+
+# ---------------------------------------------------------------------------
+# Search-helpers tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+async def search_with_text_facets(
+    item_types: list[str],
+    text_facets: list[dict[str, Any]],
+    max_results: int = 100,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Search with structured text-facet filters using the advanced search endpoint.
+
+    Parameters
+    ----------
+    item_types:
+        DDI type names or GUIDs to restrict results.  Pass ``[]`` for all types.
+    text_facets:
+        List of facet dicts.  Each should have:
+        ``property_name`` (e.g. ``"dcTitle"``), ``terms`` (list of strings),
+        ``exact_match`` (bool, default ``false``).
+    max_results:
+        Maximum results per call.
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _search_helpers.search_with_text_facets(
+        client, item_types, text_facets, max_results, _resolve_auth_mode(auth_mode)
+    )
+
+
+@mcp.tool()
+async def search_all_pages(
+    search_body: dict[str, Any],
+    max_total: int = 1000,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Execute a paginated search and collect all results up to *max_total*.
+
+    Transparently pages through ``POST /api/v1/_query`` results by bumping
+    ``ResultOffset`` each iteration.
+
+    Parameters
+    ----------
+    search_body:
+        Any valid ``SearchRequest`` body dict.  ``ResultOffset`` and
+        ``MaxResults`` are managed automatically.
+    max_total:
+        Safety ceiling on total items collected (max 50 000).
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _search_helpers.search_all_pages(
+        client, search_body, max_total, _resolve_auth_mode(auth_mode)
+    )
+
+
+@mcp.tool()
+async def search_by_urn_prefix(
+    urn_prefix: str,
+    agency: str = "",
+    max_results: int = 100,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Search for items whose URN begins with a given prefix.
+
+    Uses a ``SearchTerms`` query with the prefix value, then filters results
+    client-side to items whose full URN starts with *urn_prefix*.
+
+    Parameters
+    ----------
+    urn_prefix:
+        URN prefix string, e.g. ``"urn:ddi:int.colectica:"``.
+    agency:
+        Agency to filter results.  Pass ``""`` for all agencies.
+    max_results:
+        Maximum results to scan (up to 1 000).
+    auth_mode:
+        Authentication mode.
+    """
+    cfg    = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _search_helpers.search_by_urn_prefix(
+        client, urn_prefix, agency, max_results, _resolve_auth_mode(auth_mode)
+    )
 
 
 def main() -> None:
