@@ -88,6 +88,15 @@ class ColecticaApiClient:
             raise ColecticaApiError("COLECTICA_OPENAPI_CACHE_TTL_SECONDS must be >= 0.")
         return ttl
 
+    @staticmethod
+    def _is_cloudflare_challenge_error(message: str) -> bool:
+        lowered = message.lower()
+        return (
+            "just a moment" in lowered
+            or "cloudflare" in lowered
+            or "challenges.cloudflare.com" in lowered
+        )
+
     def _auth_headers(self, auth_mode: AuthMode) -> dict[str, str]:
         if auth_mode == "none":
             return {}
@@ -196,6 +205,16 @@ class ColecticaApiClient:
                         body,
                     )
                 return candidate_path, body
+
+        if self._is_cloudflare_challenge_error(last_error):
+            raise ColecticaApiError(
+                "Unable to discover OpenAPI document because the site returned a Cloudflare challenge page. "
+                "Point COLECTICA_BASE_URL at a direct API/OpenAPI endpoint, or ask the site owner to allow "
+                "server-side requests. Tried {paths}. Last error: {error}".format(
+                    paths=OPENAPI_CANDIDATE_PATHS,
+                    error=last_error,
+                )
+            )
 
         raise ColecticaApiError(
             f"Unable to discover OpenAPI document. Tried {OPENAPI_CANDIDATE_PATHS}. Last error: {last_error}"

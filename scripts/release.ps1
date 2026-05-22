@@ -182,11 +182,8 @@ if (Test-Path $readme) {
 $releaseNotesFile = New-ReleaseNotesFile -repoRoot $repoRoot -newVersion $NewVersion -oldVersion $oldVersion
 
 if ($Build) {
-  Write-Info "Running build validation: python -m pip install --upgrade build ; python -m build"
-  python -m pip install --upgrade build
-  if ($LASTEXITCODE -ne 0) { Write-Err "Failed to install build package"; exit 13 }
-
-  python -m build
+  Write-Info "Running build validation: uv build"
+  uv build
   if ($LASTEXITCODE -ne 0) { Write-Err "Package build failed"; exit 14 }
 }
 

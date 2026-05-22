@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  colectica-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: colectica-mcp-local
+    environment:
+      COLECTICA_BASE_URL: ${COLECTICA_BASE_URL:-https://midus.colectica.org/}
+      COLECTICA_BEARER_TOKEN: ${COLECTICA_BEARER_TOKEN}
+      COLECTICA_USERNAME: ${COLECTICA_USERNAME}
+      COLECTICA_PASSWORD: ${COLECTICA_PASSWORD}
+      PYTHONUNBUFFERED: "1"
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "from colectica_mcp.client import ColecticaClient; import asyncio; asyncio.run(ColecticaClient().discover_openapi())"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - colectica-network
+    restart: unless-stopped
+
+networks:
+  colectica-network:
+    driver: bridge

@@ -25,6 +25,7 @@ mcp = FastMCP(
 
 
 def _resolve_config() -> ColecticaConfig:
+    load_dotenv(override=True)
     return ColecticaConfig.from_env()
 
 
@@ -100,9 +101,23 @@ async def health_check(auth_mode: str = "auto") -> dict[str, Any]:
     cfg = _resolve_config()
     client = ColecticaApiClient(cfg)
     resolved_auth_mode = _resolve_auth_mode(auth_mode)
-    discovered_path, _ = await client.discover_openapi(auth_mode=resolved_auth_mode)
+    try:
+        discovered_path, _ = await client.discover_openapi(auth_mode=resolved_auth_mode)
+    except ColecticaApiError as exc:
+        error_message = str(exc)
+        if "Cloudflare challenge page" not in error_message:
+            raise
+        return {
+            "base_url": cfg.base_url,
+            "status": "warning",
+            "warning": error_message,
+            "openapi_document": None,
+            "auth_mode_used": resolved_auth_mode,
+        }
+
     return {
         "base_url": cfg.base_url,
+        "status": "ok",
         "openapi_document": discovered_path,
         "auth_mode_used": resolved_auth_mode,
     }

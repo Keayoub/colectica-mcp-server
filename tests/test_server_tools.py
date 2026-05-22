@@ -13,6 +13,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from colectica_mcp import server
+from colectica_mcp.client import ColecticaApiError
 
 
 class ResolveAuthModeTests(unittest.TestCase):
@@ -54,9 +55,25 @@ class ServerToolTests(unittest.IsolatedAsyncioTestCase):
         result = await server.health_check(auth_mode="basic")
 
         self.mock_client.discover_openapi.assert_awaited_once_with(auth_mode="basic")
+        self.assertEqual(result["status"], "ok")
         self.assertEqual(result["base_url"], "https://colectica.example")
         self.assertEqual(result["openapi_document"], "/openapi.json")
         self.assertEqual(result["auth_mode_used"], "basic")
+
+    async def test_health_check_returns_warning_for_cloudflare_block(self) -> None:
+        self.mock_client.discover_openapi = AsyncMock(
+            side_effect=ColecticaApiError(
+                "Unable to discover OpenAPI document because the site returned a Cloudflare challenge page."
+            )
+        )
+
+        result = await server.health_check(auth_mode="none")
+
+        self.mock_client.discover_openapi.assert_awaited_once_with(auth_mode="none")
+        self.assertEqual(result["status"], "warning")
+        self.assertIsNone(result["openapi_document"])
+        self.assertIn("Cloudflare challenge page", result["warning"])
+        self.assertEqual(result["auth_mode_used"], "none")
 
     async def test_list_operations_delegates_to_client(self) -> None:
         expected = [{"operation_id": "GetItem", "method": "post", "path": "/api/GetItem"}]

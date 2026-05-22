@@ -1,0 +1,10 @@
+name: colectica-mcp
+runtime: python
+services:
+  colectica-mcp:
+    project: ./apps/colectica_functions
+    language: python
+    host: function
+host:
+  function:
+    resourceId: /subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Web/sites/colectica-mcp

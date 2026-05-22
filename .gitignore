@@ -24,3 +24,4 @@ data/
 # Ignore model files
 models/
 *egg-info/
+.env
