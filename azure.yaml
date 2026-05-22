@@ -2,7 +2,7 @@ name: colectica-mcp
 runtime: python
 infra:
   provider: bicep
-  path: infra
+  path: apps/infra
 services:
   colectica-mcp:
     project: ./apps/colectica_functions
