@@ -5,6 +5,6 @@ infra:
   path: infra
 services:
   colectica-mcp:
-    project: ./colectica_functions
+    project: ./app
     language: python
     host: function
