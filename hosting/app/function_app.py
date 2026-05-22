@@ -1,227 +1,111 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
-import os
 
 import azure.functions as func
-from dotenv import load_dotenv
 
-from colectica_mcp.client import ColecticaApiClient, ColecticaApiError
-from colectica_mcp.config import ColecticaConfig
+from colectica_mcp.server import mcp  # FastMCP instance — all tools registered
 
 logger = logging.getLogger("colectica-mcp-functions")
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
-
-_JSON = "application/json"
-_CORS = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-}
+_fastmcp_base = mcp.streamable_http_app()
 
 
-def _make_client() -> ColecticaApiClient:
-    """Create a fresh client, honouring env / Key Vault overrides at call time."""
-    load_dotenv(override=True)
-    return ColecticaApiClient(ColecticaConfig.from_env())
+class _FastMCPBridge:
+    """ASGI adapter for Azure Functions that fixes two compatibility issues:
+
+    1. **Path prefix** – Azure Functions forwards the full URL path
+       (e.g. ``/api/mcp``), but FastMCP's Starlette app mounts its endpoint
+       at ``/mcp``.  We strip the leading ``/api`` before forwarding.
+
+    2. **Lifespan** – ``AsgiMiddleware`` never emits ASGI lifespan events, so
+       FastMCP's ``StreamableHTTPSessionManager`` never initialises its
+       ``anyio`` task group and raises ``RuntimeError`` on the first request.
+       We emit ``lifespan.startup`` in a background asyncio task and wait for
+       ``lifespan.startup.complete`` before forwarding any HTTP request.
+    """
+
+    def __init__(self, app) -> None:
+        self._app = app
+        self._startup_done = asyncio.Event()
+        self._lifespan_task: asyncio.Task | None = None
+
+    # ------------------------------------------------------------------
+    # Background lifespan driver
+    # ------------------------------------------------------------------
+    async def _run_lifespan(self) -> None:
+        queue: asyncio.Queue = asyncio.Queue()
+        await queue.put({"type": "lifespan.startup"})
+
+        async def receive():
+            return await queue.get()  # first call → startup; then blocks forever
+
+        async def send(message: dict) -> None:
+            if message.get("type") == "lifespan.startup.complete":
+                self._startup_done.set()
+
+        try:
+            await self._app({"type": "lifespan", "asgi": {"version": "3.0"}}, receive, send)
+        except Exception:
+            logger.warning("FastMCP lifespan startup failed", exc_info=True)
+            self._startup_done.set()  # unblock HTTP handlers even on error
+
+    # ------------------------------------------------------------------
+    # ASGI callable
+    # ------------------------------------------------------------------
+    async def __call__(self, scope, receive, send) -> None:
+        # Strip /api prefix so FastMCP routes at /mcp are reachable
+        if scope.get("type") == "http":
+            path: str = scope.get("path", "")
+            if path.startswith("/api"):
+                overrides: dict = {"path": path[4:] or "/"}
+                raw = scope.get("raw_path", b"")
+                if isinstance(raw, (bytes, bytearray)) and raw.startswith(b"/api"):
+                    overrides["raw_path"] = raw[4:] or b"/"
+                scope = {**scope, **overrides}
+
+        # Ensure lifespan startup has completed before the first HTTP request
+        if scope.get("type") == "http" and not self._startup_done.is_set():
+            if self._lifespan_task is None or self._lifespan_task.done():
+                self._lifespan_task = asyncio.create_task(self._run_lifespan())
+            await asyncio.wait_for(asyncio.shield(self._startup_done.wait()), timeout=15.0)
+
+        await self._app(scope, receive, send)
 
 
-def _json_response(data: object, status: int = 200) -> func.HttpResponse:
-    return func.HttpResponse(
-        json.dumps(data, default=str),
-        status_code=status,
-        headers={**_CORS, "Content-Type": _JSON},
-    )
+_mcp_asgi = func.AsgiMiddleware(_FastMCPBridge(_fastmcp_base))
+
+app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 
-def _error(message: str, status: int = 500) -> func.HttpResponse:
-    return _json_response({"error": message}, status)
+# ── /api/mcp  (all MCP traffic → FastMCP via ASGI bridge) ─────────────────────
+
+@app.route(route="mcp/{*rest}", methods=["GET", "POST", "DELETE"])
+async def mcp_handler(req: func.HttpRequest) -> func.HttpResponse:
+    """Forward all MCP traffic to the FastMCP streamable-HTTP app."""
+    try:
+        return await _mcp_asgi.handle_async(req)
+    except Exception:
+        logger.exception("MCP ASGI bridge failed for %s %s", req.method, req.url)
+        return func.HttpResponse(
+            '{"error":"internal server error"}',
+            status_code=500,
+            headers={"Content-Type": "application/json"},
+        )
 
 
 # ── /api/health ────────────────────────────────────────────────────────────────
 
 @app.route(route="health", methods=["GET"])
 async def health_check(req: func.HttpRequest) -> func.HttpResponse:
-    try:
-        client = _make_client()
-        await client.discover_openapi()
-        return _json_response({"status": "healthy", "service": "colectica-mcp"})
-    except ColecticaApiError as exc:
-        return _error(str(exc), 503)
-    except Exception as exc:
-        logger.exception("Health check failed")
-        return _error(str(exc), 503)
-
-
-# ── /api/operations ────────────────────────────────────────────────────────────
-
-@app.route(route="operations", methods=["GET"])
-async def list_operations(req: func.HttpRequest) -> func.HttpResponse:
-    """Return all Colectica API operations, optionally filtered by ?category=<name>."""
-    try:
-        client = _make_client()
-        ops = await client.list_operations()
-        category = req.params.get("category", "").strip().lower()
-        if category:
-            ops = [o for o in ops if category in o.get("path", "").lower()]
-        return _json_response({"count": len(ops), "operations": ops})
-    except ColecticaApiError as exc:
-        return _error(str(exc), 502)
-    except Exception as exc:
-        logger.exception("list_operations failed")
-        return _error(str(exc))
-
-
-# ── /api/operations/{operation_id} ────────────────────────────────────────────
-
-@app.route(route="operations/{operation_id}", methods=["GET"])
-async def get_operation(req: func.HttpRequest) -> func.HttpResponse:
-    operation_id = req.route_params.get("operation_id", "")
-    try:
-        client = _make_client()
-        detail = await client.operation_details(operation_id)
-        return _json_response(detail)
-    except ColecticaApiError as exc:
-        status = 404 if "not found" in str(exc).lower() else 502
-        return _error(str(exc), status)
-    except Exception as exc:
-        logger.exception("get_operation failed")
-        return _error(str(exc))
-
-
-# ── /api/call ─────────────────────────────────────────────────────────────────
-
-@app.route(route="call", methods=["POST", "OPTIONS"])
-async def call_operation(req: func.HttpRequest) -> func.HttpResponse:
-    """Invoke a Colectica API operation.
-
-    Request body (JSON):
-        {
-            "operationId": "<string>",
-            "arguments":   { ... }   // optional
-        }
-    """
-    if req.method == "OPTIONS":
-        return func.HttpResponse(b"", status_code=200, headers=_CORS)
-
-    try:
-        body = req.get_json()
-    except ValueError:
-        return _error("Request body must be valid JSON.", 400)
-
-    operation_id = (body.get("operationId") or body.get("operation_id") or "").strip()
-    if not operation_id:
-        return _error("'operationId' is required.", 400)
-
-    arguments: dict = body.get("arguments") or {}
-
-    try:
-        client = _make_client()
-        result = await client.call_operation(operation_id, arguments)
-        return _json_response(result)
-    except ColecticaApiError as exc:
-        msg = str(exc)
-        status = 404 if "not found" in msg.lower() else 502
-        return _error(msg, status)
-    except Exception as exc:
-        logger.exception("call_operation failed for %s", operation_id)
-        return _error(str(exc))
-
-
-# ── /api/mcp  (MCP JSON-RPC over HTTP) ────────────────────────────────────────
-
-@app.route(route="mcp", methods=["GET", "POST", "OPTIONS"])
-async def mcp_endpoint(req: func.HttpRequest) -> func.HttpResponse:
-    """Minimal MCP JSON-RPC handler (tools/list, tools/call, initialize).
-
-    Compatible with MCP clients that connect via Streamable HTTP.
-    """
-    if req.method == "OPTIONS":
-        return func.HttpResponse(b"", status_code=200, headers=_CORS)
-
-    if req.method == "GET":
-        return _json_response({
-            "service": "colectica-mcp",
-            "protocol": "MCP JSON-RPC 2.0",
-            "endpoints": {
-                "mcp": "POST /api/mcp",
-                "operations": "GET /api/operations",
-                "call": "POST /api/call",
-                "health": "GET /api/health",
-            },
-        })
-
-    # POST — JSON-RPC 2.0
-    try:
-        rpc = req.get_json()
-    except ValueError:
-        return _json_rpc_error(None, -32700, "Parse error")
-
-    rpc_id = rpc.get("id")
-    method = rpc.get("method", "")
-    params = rpc.get("params") or {}
-
-    try:
-        client = _make_client()
-
-        if method == "initialize":
-            result = {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {"tools": {}},
-                "serverInfo": {"name": "colectica-mcp", "version": "0.1.8"},
-            }
-
-        elif method == "tools/list":
-            ops = await client.list_operations()
-            result = {
-                "tools": [
-                    {
-                        "name": o["operation_id"],
-                        "description": f"{o['method']} {o['path']}",
-                        "inputSchema": {"type": "object", "properties": {}},
-                    }
-                    for o in ops
-                ]
-            }
-
-        elif method == "tools/call":
-            tool_name = params.get("name", "")
-            arguments = params.get("arguments") or {}
-            if not tool_name:
-                return _json_rpc_error(rpc_id, -32602, "Missing tool name")
-            data = await client.call_operation(tool_name, arguments)
-            result = {
-                "content": [{"type": "text", "text": json.dumps(data, default=str)}]
-            }
-
-        else:
-            return _json_rpc_error(rpc_id, -32601, f"Method not found: {method}")
-
-    except ColecticaApiError as exc:
-        return _json_rpc_error(rpc_id, -32000, str(exc))
-    except Exception as exc:
-        logger.exception("MCP method %s failed", method)
-        return _json_rpc_error(rpc_id, -32603, str(exc))
-
+    """Liveness probe — returns 200 if the Function is running."""
+    from importlib.metadata import version as _pkg_version
+    _ver = _pkg_version("colectica-mcp-server")
     return func.HttpResponse(
-        json.dumps({"jsonrpc": "2.0", "id": rpc_id, "result": result}, default=str),
+        json.dumps({"status": "ok", "version": _ver, "tools": len(mcp._tool_manager._tools)}),
         status_code=200,
-        headers={**_CORS, "Content-Type": _JSON},
-    )
-
-
-def _json_rpc_error(rpc_id: object, code: int, message: str) -> func.HttpResponse:
-    body = {
-        "jsonrpc": "2.0",
-        "id": rpc_id,
-        "error": {"code": code, "message": message},
-    }
-    http_status = 400 if code in (-32700, -32600, -32602) else 200
-    return func.HttpResponse(
-        json.dumps(body),
-        status_code=http_status,
-        headers={**_CORS, "Content-Type": _JSON},
+        headers={"Content-Type": "application/json"},
     )

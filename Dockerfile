@@ -36,11 +36,17 @@ COPY pyproject.toml .
 
 ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    COLECTICA_MCP_TRANSPORT=streamable-http \
+    COLECTICA_MCP_HOST=0.0.0.0 \
+    COLECTICA_MCP_PORT=8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "from colectica_mcp.client import ColecticaClient; import asyncio; asyncio.run(ColecticaClient().discover_openapi())" || exit 1
+EXPOSE 8000
 
-# Run the MCP server with stdio transport (required for VS Code integration)
-CMD ["python", "-m", "colectica_mcp.server", "--transport", "stdio"]
+# Health check — hits the MCP endpoint over HTTP
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/mcp')" || exit 1
+
+# Transport and port are controlled via COLECTICA_MCP_TRANSPORT / COLECTICA_MCP_PORT env vars.
+# Default: streamable-http on port 8000. Override to 'stdio' for VS Code / Claude Desktop.
+CMD ["python", "-m", "colectica_mcp.server"]

@@ -132,6 +132,10 @@ resource functionApp 'Microsoft.Web/sites@2023-01-01' = {
           value: 'https://midus.colectica.org/'
         }
         {
+          name: 'PYTHONPATH'
+          value: '/home/site/wwwroot/.python_packages/lib/site-packages'
+        }
+        {
           name: 'ENVIRONMENT'
           value: environment
         }

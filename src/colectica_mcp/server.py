@@ -5,6 +5,7 @@ import argparse
 import asyncio
 import os
 import re
+from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
@@ -17,12 +18,24 @@ from .__version__ import __version__ as _SERVER_VERSION
 
 load_dotenv()
 
+
+def _load_instructions() -> str:
+    """Load MCP server instructions from prompt_instructions.md."""
+    path = Path(__file__).parent / "prompt_instructions.md"
+    try:
+        return path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return (
+            "You are an agent connected to a Colectica Repository. "
+            "Call list_operations first, then call_operation by operationId."
+        )
+
+
 mcp = FastMCP(
     name="colectica-mcp",
-    instructions=(
-        "Use this server to access Colectica Repository REST API via OpenAPI discovery. "
-        "Call list_operations first, then call_operation by operationId."
-    ),
+    instructions=_load_instructions(),
+    host=os.getenv("COLECTICA_MCP_HOST", "0.0.0.0"),
+    port=int(os.getenv("COLECTICA_MCP_PORT", "8000")),
 )
 
 
