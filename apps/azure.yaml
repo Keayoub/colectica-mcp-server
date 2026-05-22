@@ -2,9 +2,9 @@ name: colectica-mcp
 runtime: python
 infra:
   provider: bicep
-  path: apps/infra
+  path: infra
 services:
   colectica-mcp:
-    project: ./apps/colectica_functions
+    project: ./colectica_functions
     language: python
     host: function
