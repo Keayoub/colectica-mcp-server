@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import os
 import re
 from typing import Any
@@ -12,6 +13,7 @@ from mcp.server.fastmcp import FastMCP
 from .client import ColecticaApiClient
 from .client import ColecticaApiError
 from .config import AuthMode, ColecticaConfig
+from .__version__ import __version__ as _SERVER_VERSION
 
 load_dotenv()
 
@@ -1248,6 +1250,119 @@ async def request_replication_state_change(body: dict[str, Any], auth_mode: str 
         arguments={"body": body},
         auth_mode=_resolve_auth_mode(auth_mode),
     )
+
+
+# ---------------------------------------------------------------------------
+# Batch 5 — Convenience / composite tools
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+async def server_info(auth_mode: str = "auto") -> dict[str, Any]:
+    """Return MCP server version, configuration summary, and live connectivity status.
+
+    Useful as a first call to orient an LLM: confirms the server is reachable and
+    shows which base URL, transport, and auth mode are active.
+    """
+    cfg = _resolve_config()
+    resolved_auth_mode = _resolve_auth_mode(auth_mode)
+
+    client = ColecticaApiClient(cfg)
+    connectivity: dict[str, Any] = {"status": "unknown"}
+    try:
+        discovered_path, _ = await client.discover_openapi(auth_mode=resolved_auth_mode)
+        connectivity = {"status": "ok", "openapi_document": discovered_path}
+    except ColecticaApiError as exc:
+        connectivity = {"status": "error", "detail": str(exc)}
+
+    return {
+        "server_version": _SERVER_VERSION,
+        "base_url": cfg.base_url,
+        "transport": cfg.transport,
+        "auth_mode_resolved": resolved_auth_mode,
+        "connectivity": connectivity,
+    }
+
+
+@mcp.tool()
+async def search_by_text(
+    query: str,
+    item_types: list[str] | None = None,
+    max_results: int = 20,
+    agency_ids: list[str] | None = None,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Search Colectica repository items by plain-text query.
+
+    A convenience wrapper that builds the search request body automatically.
+    Use ``item_types`` to filter by DDI item-type URNs (e.g.
+    ``["urn:ddi:controlled_vocabulary:variable:1"]``).
+    Use ``agency_ids`` to restrict results to specific agencies.
+    Returns raw search results from the repository.
+    """
+    if not query.strip():
+        raise ValueError("query must be a non-empty string")
+    if max_results < 1 or max_results > 1000:
+        raise ValueError("max_results must be between 1 and 1000")
+
+    body: dict[str, Any] = {
+        "SearchTerms": query.strip(),
+        "MaxResults": max_results,
+    }
+    if item_types:
+        body["ItemTypes"] = item_types
+    if agency_ids:
+        body["AgencyIds"] = agency_ids
+
+    cfg = _resolve_config()
+    client = ColecticaApiClient(cfg)
+    return await _call_first_available_operation(
+        client,
+        ["Search", _colectica_op("POST", "/api/v1/_query")],
+        arguments={"body": body},
+        auth_mode=_resolve_auth_mode(auth_mode),
+    )
+
+
+@mcp.tool()
+async def get_item_summary(
+    agency: str,
+    id: str,
+    auth_mode: str = "auto",
+) -> dict[str, Any]:
+    """Fetch history and latest version number for an item in a single call.
+
+    Combines ``get_item_history`` and ``get_item_latest_version`` using
+    concurrent requests, reducing round trips for the LLM.
+    Returns a merged dict with ``latest_version`` and ``history`` keys.
+    """
+    cfg = _resolve_config()
+    resolved_auth_mode = _resolve_auth_mode(auth_mode)
+
+    async def _history() -> dict[str, Any]:
+        c = ColecticaApiClient(cfg)
+        return await c.call_operation(
+            _colectica_op("GET", "/api/v1/item/{agency}/{id}/history"),
+            arguments={"agency": agency, "id": id},
+            auth_mode=resolved_auth_mode,
+        )
+
+    async def _latest() -> dict[str, Any]:
+        c = ColecticaApiClient(cfg)
+        return await c.call_operation(
+            _colectica_op("GET", "/api/v1/item/{agency}/{id}/versions/_latest"),
+            arguments={"agency": agency, "id": id},
+            auth_mode=resolved_auth_mode,
+        )
+
+    history_result, latest_result = await asyncio.gather(_history(), _latest())
+
+    return {
+        "agency": agency,
+        "id": id,
+        "latest_version": latest_result.get("body"),
+        "history": history_result.get("body"),
+    }
 
 
 def main() -> None:
