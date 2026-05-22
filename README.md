@@ -206,7 +206,110 @@ Use this sequence to integrate with DDI-focused Colectica endpoints:
 4. Execute custom integration calls via `call_operation` using typed `arguments` and `arguments.body`.
 5. For large result sets, switch to `call_operation_paginated`.
 
-## 7. Verification commands
+## 7. Container deployment (streamable-http)
+
+The MCP server can run as a standalone HTTP service — useful for cloud
+deployments, multi-agent setups, and connecting to Azure AI Foundry.
+
+### Run with Docker
+
+```bash
+# Build image
+docker build -t colectica-mcp-server:latest .
+
+# Run as HTTP server
+docker run -p 8000:8000 \
+  -e COLECTICA_BASE_URL=https://your-server.example.com \
+  -e COLECTICA_BEARER_TOKEN=your-token \
+  colectica-mcp-server:latest
+# → MCP endpoint: http://localhost:8000/mcp
+```
+
+### Run full stack (Colectica MCP + Purview MCP + AI Agent)
+
+```bash
+cp .env.example .env   # fill in your values
+docker compose up --build
+```
+
+Services started:
+- `colectica-mcp` → `http://localhost:8000/mcp`
+- `purview-mcp`   → `http://localhost:8001/mcp`
+- `foundry-agent` → one-shot AI agent (waits for both MCPs to be healthy)
+
+### Deploy to Azure Container Apps
+
+```bash
+az acr build --registry <registry> --image colectica-mcp-server:latest .
+
+az containerapp create \
+  --name colectica-mcp \
+  --image <registry>.azurecr.io/colectica-mcp-server:latest \
+  --env-vars \
+    COLECTICA_BASE_URL=https://your-server.example.com \
+    COLECTICA_BEARER_TOKEN=secretref:colectica-token \
+    COLECTICA_MCP_TRANSPORT=streamable-http \
+    COLECTICA_MCP_HOST=0.0.0.0 \
+  --ingress external --target-port 8000 \
+  --mi-system-assigned
+```
+
+---
+
+## 8. AI Agent integrations (Colectica + Purview)
+
+The `integrations/` folder contains agents and code samples that combine
+**Colectica MCP** and **Purview MCP** to automate data governance workflows.
+
+### GitHub Copilot Agent (VS Code)
+
+Activate `@ColecticaPurviewAgent` in Copilot Chat for 5 built-in scenarios:
+
+| Skill | What it does |
+|---|---|
+| `sync-metadata` | Search Colectica → transform → bulk import to Purview |
+| `lineage-propagation` | Build Purview lineage from Colectica relationships |
+| `drift-detection` | Detect missing / stale / orphaned entities |
+| `tag-governance` | Bidirectional tag ↔ classification sync |
+| `cross-system-query` | Natural-language Q&A across both systems |
+
+Agent definition: `.github/agents/ColecticaPurviewAgent.md`  
+Skills: `.github/skills/*.md`
+
+### Azure AI Foundry Agent SDK
+
+Full Python agent using `azure-ai-projects` with native MCP tool support.
+Runs in AI Foundry, Azure Container Apps, or any Docker host.
+
+```bash
+cd integrations/examples/foundry_agent
+pip install -r requirements.txt
+
+export AZURE_AI_PROJECT_ENDPOINT="https://<hub>.api.azureml.ms"
+export COLECTICA_MCP_URL="https://colectica-mcp.<env>.azurecontainerapps.io/mcp"
+export PURVIEW_MCP_URL="https://purview-mcp.<env>.azurecontainerapps.io/mcp"
+
+python agent.py sync           # sync QuestionItems → Purview (dry run)
+python agent.py drift          # detect metadata drift
+python agent.py "your question"
+```
+
+### Claude SDK Agent (local / prototyping)
+
+```bash
+cd integrations/agents
+pip install anthropic python-dotenv
+python colectica_purview_agent.py
+```
+
+### More frameworks
+
+See [`integrations/docs/`](integrations/docs/README.md) for LangChain,
+LlamaIndex, local LLM, and custom agent guides.
+
+---
+
+## 9. Verification commands
 
 Run Colectica server tool unit tests locally:
 
