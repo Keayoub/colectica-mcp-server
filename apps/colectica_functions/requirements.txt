@@ -1,7 +1,7 @@
 azure-functions>=1.18.0
 azure-identity>=1.14.0
 azure-keyvault-secrets>=4.7.0
-colectica-mcp-server==0.1.7
+colectica-mcp-server>=0.1.8
 httpx>=0.28.0
 python-dotenv>=1.0.0
 pydantic>=2.0.0
