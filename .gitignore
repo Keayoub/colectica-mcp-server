@@ -6,6 +6,9 @@
 .github/prompts/
 .github/context-mode/
 
+# Azurite local storage emulator data
+.azurite/
+
 # Ignore Python bytecode files
 __pycache__/
 *.pyc
