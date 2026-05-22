@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "colectica-mcp-server"
-version = "0.1.8"
+dynamic = ["version"]
 description = "MCP server for Colectica Repository REST API"
 readme = "README.md"
 license = "Apache-2.0"
@@ -24,5 +24,9 @@ dependencies = [
 [project.scripts]
 colectica-mcp = "colectica_mcp.server:main"
 
+[tool.hatch.version]
+path = "src/colectica_mcp/__version__.py"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/colectica_mcp"]
+sources = ["src"]
