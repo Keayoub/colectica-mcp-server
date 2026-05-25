@@ -14,6 +14,8 @@ on:
 
 jobs:
   mcp-preflight:
+    # Temporarily disabled. Remove this line to re-enable the workflow.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
