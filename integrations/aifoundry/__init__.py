@@ -6,6 +6,8 @@ from .statistician_prompt_agent import (
     build_statistician_foundry_agent_payload,
 )
 from .colectica_tool_bridge import (
+    ColecticaMcpHttpExecutor,
+    ColecticaMcpStdioExecutor,
     ColecticaToolBridge,
     extract_tool_calls,
     submit_tool_outputs,
@@ -14,6 +16,8 @@ from .colectica_tool_bridge import (
 __all__ = [
     "StatisticianPromptAgent",
     "build_statistician_foundry_agent_payload",
+    "ColecticaMcpStdioExecutor",
+    "ColecticaMcpHttpExecutor",
     "ColecticaToolBridge",
     "extract_tool_calls",
     "submit_tool_outputs",
