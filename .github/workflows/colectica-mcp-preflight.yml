@@ -1,0 +1,61 @@
+name: Colectica MCP Preflight
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "src/**"
+      - "integrations/**"
+      - "pyproject.toml"
+      - ".github/workflows/colectica-mcp-preflight.yml"
+
+jobs:
+  mcp-preflight:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    env:
+      COLECTICA_MCP_TRANSPORT: stdio
+      COLECTICA_MCP_COMMAND: colectica-mcp
+      COLECTICA_BASE_URL: ${{ secrets.COLECTICA_BASE_URL }}
+      COLECTICA_BEARER_TOKEN: ${{ secrets.COLECTICA_BEARER_TOKEN }}
+      COLECTICA_USERNAME: ${{ secrets.COLECTICA_USERNAME }}
+      COLECTICA_PASSWORD: ${{ secrets.COLECTICA_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Validate Colectica auth configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${COLECTICA_BASE_URL:-}" ]]; then
+            echo "Missing required secret: COLECTICA_BASE_URL"
+            exit 1
+          fi
+
+          if [[ -z "${COLECTICA_BEARER_TOKEN:-}" ]]; then
+            if [[ -z "${COLECTICA_USERNAME:-}" || -z "${COLECTICA_PASSWORD:-}" ]]; then
+              echo "Set either COLECTICA_BEARER_TOKEN or both COLECTICA_USERNAME and COLECTICA_PASSWORD"
+              exit 1
+            fi
+          fi
+
+      - name: Run Colectica MCP smoke check
+        run: python integrations/examples/colectica_mcp_smoke_check.py

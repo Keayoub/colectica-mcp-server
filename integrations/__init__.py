@@ -21,6 +21,8 @@ __all__ = [
     "Colectica_PurviewAgent",
     "StatisticianPromptAgent",
     "build_statistician_foundry_agent_payload",
+    "ColecticaMcpStdioExecutor",
+    "ColecticaMcpHttpExecutor",
     "ColecticaToolBridge",
     "extract_tool_calls",
     "submit_tool_outputs",
@@ -28,6 +30,8 @@ __all__ = [
 
 from .agents import Colectica_PurviewAgent
 from .aifoundry import (
+    ColecticaMcpHttpExecutor,
+    ColecticaMcpStdioExecutor,
     ColecticaToolBridge,
     StatisticianPromptAgent,
     build_statistician_foundry_agent_payload,

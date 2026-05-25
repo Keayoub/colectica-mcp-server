@@ -95,7 +95,27 @@ The bridge provides:
 - dispatch to an executor callback
 - formatting and submission of `tool_outputs`
 
-Default behavior is non-destructive (echoes tool calls). Replace the bridge executor with your real Colectica MCP transport (stdio or HTTP) for production.
+Bridge execution now supports concrete MCP transports. Configure stdio or HTTP transport based on your runtime environment.
+
+Recommended setup in this repository:
+
+- `ColecticaMcpStdioExecutor` for local and CI runners that can spawn `colectica-mcp`
+- `ColecticaMcpHttpExecutor` for hosted MCP endpoints (for example Azure Functions streamable-HTTP)
+
+The example `integrations/examples/aifoundry_statistician_prompt_agent_example.py` now supports both transports via environment variables:
+
+- `COLECTICA_MCP_TRANSPORT=stdio` (default)
+- `COLECTICA_MCP_COMMAND=colectica-mcp`
+- `COLECTICA_MCP_TRANSPORT=http`
+- `COLECTICA_MCP_URL=https://<host>/api/mcp`
+
+For pipeline and deployment preflight, run:
+
+- `python integrations/examples/colectica_mcp_smoke_check.py`
+- GitHub Actions workflow: `.github/workflows/colectica-mcp-preflight.yml`
+
+This validates a real `health_check` tool call before Foundry agent or run creation.
+Ensure Colectica server configuration is present first: `COLECTICA_BASE_URL` and either bearer token or basic credentials.
 
 ## Advantages
 

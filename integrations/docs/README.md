@@ -143,7 +143,8 @@ See `integrations/examples/` for working code:
 
 - `orchestration_example.py` — Claude SDK example
 - `aifoundry_statistician_prompt_agent_example.py` — Azure AI Foundry example for the Colectica statistician prompt agent
-- `aifoundry/colectica_tool_bridge.py` — tool-bridge skeleton for handling Foundry `requires_action` function calls
+- `colectica_mcp_smoke_check.py` — fail-fast Colectica MCP preflight using the real configured transport
+- `aifoundry/colectica_tool_bridge.py` — tool-bridge with concrete Colectica MCP executors (stdio and HTTP)
 - More framework examples coming
 
 ---

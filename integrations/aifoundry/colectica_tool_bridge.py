@@ -12,14 +12,75 @@ You can swap the executor with a real MCP transport adapter (stdio or HTTP).
 
 from __future__ import annotations
 
+import asyncio
 import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from mcp import ClientSession
+from mcp import StdioServerParameters
+from mcp import stdio_client
+
+try:
+    from mcp.client.streamable_http import streamable_http_client
+except ImportError:  # pragma: no cover - compatibility for older mcp versions
+    from mcp.client.streamable_http import streamablehttp_client as streamable_http_client
+
 
 class ToolBridgeError(RuntimeError):
     """Raised when tool-call extraction or submission cannot proceed."""
+
+
+class ColecticaMcpStdioExecutor:
+    """
+    Execute Colectica MCP tools through stdio transport.
+
+    This is a concrete MCP execution path suitable for local development and
+    production runners that can spawn processes.
+    """
+
+    def __init__(
+        self,
+        command: str = "colectica-mcp",
+        args: list[str] | None = None,
+        env: dict[str, str] | None = None,
+    ) -> None:
+        self.command = command
+        self.args = args or ["--transport", "stdio"]
+        self.env = env
+
+    def __call__(self, tool_name: str, arguments: dict[str, Any]) -> Any:
+        return asyncio.run(self._call_tool(tool_name=tool_name, arguments=arguments))
+
+    async def _call_tool(self, tool_name: str, arguments: dict[str, Any]) -> Any:
+        server = StdioServerParameters(
+            command=self.command,
+            args=self.args,
+            env=self.env,
+        )
+        async with stdio_client(server) as streams:
+            async with ClientSession(*streams) as session:
+                await session.initialize()
+                result = await session.call_tool(name=tool_name, arguments=arguments)
+                return _normalize_call_tool_result(result)
+
+
+class ColecticaMcpHttpExecutor:
+    """Execute Colectica MCP tools through streamable HTTP transport."""
+
+    def __init__(self, url: str) -> None:
+        self.url = url
+
+    def __call__(self, tool_name: str, arguments: dict[str, Any]) -> Any:
+        return asyncio.run(self._call_tool(tool_name=tool_name, arguments=arguments))
+
+    async def _call_tool(self, tool_name: str, arguments: dict[str, Any]) -> Any:
+        async with streamable_http_client(self.url) as (read_stream, write_stream, _):
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+                result = await session.call_tool(name=tool_name, arguments=arguments)
+                return _normalize_call_tool_result(result)
 
 
 @dataclass(slots=True)
@@ -47,12 +108,16 @@ class ColecticaToolBridge:
     ) -> None:
         self._executor = executor or self._default_executor
 
+    def execute_tool(self, tool_name: str, arguments: dict[str, Any] | None = None) -> Any:
+        """Execute a single tool call through the configured backend executor."""
+        return self._executor(tool_name, arguments or {})
+
     def build_tool_outputs_for_run(self, run: Any) -> list[dict[str, str]]:
         """Build `tool_outputs` payload for a run in `requires_action` state."""
         outputs: list[dict[str, str]] = []
         for call in extract_tool_calls(run):
             try:
-                result = self._executor(call.name, call.arguments)
+                result = self.execute_tool(call.name, call.arguments)
                 payload = {
                     "ok": True,
                     "tool": call.name,
@@ -81,12 +146,10 @@ class ColecticaToolBridge:
 
         Replace this with a real MCP adapter in production.
         """
-        return {
-            "message": "No MCP executor configured.",
-            "tool_name": tool_name,
-            "arguments": arguments,
-            "hint": "Provide ColecticaToolBridge(executor=your_mcp_executor).",
-        }
+        raise ToolBridgeError(
+            "No executor configured. Provide ColecticaToolBridge(executor=ColecticaMcpStdioExecutor(...)) "
+            "or ColecticaMcpHttpExecutor(...)."
+        )
 
 
 def extract_tool_calls(run: Any) -> list[FoundryToolCall]:
@@ -173,3 +236,46 @@ def _parse_arguments(raw_arguments: str | dict[str, Any]) -> dict[str, Any]:
         return parsed
 
     return {"_value": parsed}
+
+
+def _normalize_call_tool_result(result: Any) -> dict[str, Any]:
+    """Normalize MCP CallToolResult into JSON-safe output."""
+    payload: dict[str, Any] = {
+        "isError": bool(getattr(result, "isError", False)),
+    }
+
+    structured_content = getattr(result, "structuredContent", None)
+    content = getattr(result, "content", None)
+
+    if structured_content is not None:
+        payload["structuredContent"] = _to_json_safe(structured_content)
+
+    if content is not None:
+        payload["content"] = _to_json_safe(content)
+
+    return payload
+
+
+def _to_json_safe(value: Any) -> Any:
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return value
+
+    if isinstance(value, dict):
+        return {str(k): _to_json_safe(v) for k, v in value.items()}
+
+    if isinstance(value, (list, tuple, set)):
+        return [_to_json_safe(v) for v in value]
+
+    if hasattr(value, "model_dump"):
+        try:
+            return _to_json_safe(value.model_dump())
+        except Exception:
+            return str(value)
+
+    if hasattr(value, "dict"):
+        try:
+            return _to_json_safe(value.dict())
+        except Exception:
+            return str(value)
+
+    return str(value)
