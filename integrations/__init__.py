@@ -19,4 +19,18 @@ Usage:
 __version__ = "0.1.0"
 __all__ = [
     "Colectica_PurviewAgent",
+    "StatisticianPromptAgent",
+    "build_statistician_foundry_agent_payload",
+    "ColecticaToolBridge",
+    "extract_tool_calls",
+    "submit_tool_outputs",
 ]
+
+from .agents import Colectica_PurviewAgent
+from .aifoundry import (
+    ColecticaToolBridge,
+    StatisticianPromptAgent,
+    build_statistician_foundry_agent_payload,
+    extract_tool_calls,
+    submit_tool_outputs,
+)

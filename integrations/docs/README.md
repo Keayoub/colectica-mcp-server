@@ -23,6 +23,7 @@ Choose your framework:
 |---|---|---|
 | **Claude SDK** | [In repo: `integrations/agents/colectica_purview_agent.py`](../agents/colectica_purview_agent.py) | Quick start, prototyping |
 | **AI Foundry** | [AGENT_FOUNDRY.md](./AGENT_FOUNDRY.md) | Enterprise Azure, managed services |
+| **AI Foundry Prompt Agent (Statistician)** | [In repo: `integrations/aifoundry/statistician_prompt_agent.py`](../aifoundry/statistician_prompt_agent.py) | Survey metadata workflows on Colectica MCP |
 | **LangChain** | [AGENT_LANGCHAIN.md](./AGENT_LANGCHAIN.md) | Complex workflows, local execution |
 | **LlamaIndex** | [AGENT_LLAMAINDEX.md](./AGENT_LLAMAINDEX.md) | RAG pipelines, semantic search |
 | **Local LLM** | [AGENT_LOCAL_LLM.md](./AGENT_LOCAL_LLM.md) | Privacy, offline, no API costs |
@@ -141,6 +142,8 @@ A: No, the Purview MCP calls the REST API. You just need a Purview account and a
 See `integrations/examples/` for working code:
 
 - `orchestration_example.py` — Claude SDK example
+- `aifoundry_statistician_prompt_agent_example.py` — Azure AI Foundry example for the Colectica statistician prompt agent
+- `aifoundry/colectica_tool_bridge.py` — tool-bridge skeleton for handling Foundry `requires_action` function calls
 - More framework examples coming
 
 ---

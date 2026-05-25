@@ -1,0 +1,156 @@
+%% AdventureWorks (Purview) -> Colectica DDI mapping
+%% Scope: SalesLT.Customer worked example
+%% Render: VS Code "Markdown Preview Mermaid Support" or https://mermaid.live
+
+graph LR
+  %% ============ PURVIEW SIDE ============
+  subgraph Purview["Microsoft Purview (physical assets)"]
+    direction TB
+    DB["Azure SQL DB<br/>Adventureworks"]
+    SC["Schema<br/>SalesLT"]
+    T_Cust["Table<br/>SalesLT.Customer<br/>guid: ea3412c3-7387-...0"]
+
+    C_ID["Column<br/>CustomerID<br/>int, PK"]
+    C_FN["Column<br/>FirstName<br/>nvarchar(50)"]
+    C_LN["Column<br/>LastName<br/>nvarchar(50)"]
+    C_EM["Column<br/>EmailAddress<br/>nvarchar(50)"]
+    C_PH["Column<br/>Phone<br/>nvarchar(25)"]
+    C_TT["Column<br/>Title<br/>nvarchar(8) (categorical)"]
+    C_NS["Column<br/>NameStyle<br/>bit (categorical)"]
+    C_MD["Column<br/>ModifiedDate<br/>datetime"]
+  end
+
+  %% ============ COLECTICA SIDE ============
+  subgraph Colectica["Colectica Repository (DDI metadata)"]
+    direction TB
+
+    subgraph Study["Study layer"]
+      SU["StudyUnit<br/>AW_SalesLT"]
+      RP["ResourcePackage<br/>SalesLT"]
+    end
+
+    subgraph Data["Data product layer"]
+      LP["LogicalProduct<br/>Customer"]
+      DR["DataRelationship<br/>Customer"]
+      PDP["PhysicalDataProduct<br/>Customer"]
+    end
+
+    subgraph Vars["Variable layer"]
+      V_ID["Variable<br/>Customer.CustomerID"]
+      V_FN["Variable<br/>Customer.FirstName"]
+      V_LN["Variable<br/>Customer.LastName"]
+      V_EM["Variable<br/>Customer.EmailAddress"]
+      V_PH["Variable<br/>Customer.Phone"]
+      V_TT["Variable<br/>Customer.Title"]
+      V_NS["Variable<br/>Customer.NameStyle"]
+      V_MD["Variable<br/>Customer.ModifiedDate"]
+    end
+
+    subgraph Reuse["Reusable semantics"]
+      RV_ID["RepresentedVariable<br/>CustomerIdentifier"]
+      RV_PN["RepresentedVariable<br/>PersonName"]
+      RV_EM["RepresentedVariable<br/>EmailAddress"]
+      RV_PH["RepresentedVariable<br/>PhoneNumber"]
+      RV_TT["RepresentedVariable<br/>PersonTitle"]
+      RV_NS["RepresentedVariable<br/>NameStyleFlag"]
+      RV_MD["RepresentedVariable<br/>AuditModifiedDate"]
+    end
+
+    subgraph Codes["Code & category schemes"]
+      CS_TT["CodeScheme<br/>PersonTitle<br/>{Mr., Mrs., Ms., Dr.}"]
+      CS_NS["CodeScheme<br/>BooleanFlag<br/>{0=Western, 1=Eastern}"]
+      CAT_TT["CategoryScheme<br/>PersonTitle"]
+      CAT_NS["CategoryScheme<br/>BooleanFlag"]
+    end
+
+    subgraph Concepts["Concept layer"]
+      CONC["ConceptScheme<br/>AW_Concepts"]
+      C1["Concept<br/>CustomerIdentifier"]
+      C2["Concept<br/>PersonGivenName"]
+      C3["Concept<br/>PersonFamilyName"]
+      C4["Concept<br/>EmailAddress"]
+      C5["Concept<br/>PhoneNumber"]
+      C6["Concept<br/>PersonTitle"]
+      C7["Concept<br/>NameStyleFlag"]
+      C8["Concept<br/>RecordModifiedTimestamp"]
+    end
+  end
+
+  %% ============ PURVIEW STRUCTURE ============
+  DB --> SC --> T_Cust
+  T_Cust --> C_ID
+  T_Cust --> C_FN
+  T_Cust --> C_LN
+  T_Cust --> C_EM
+  T_Cust --> C_PH
+  T_Cust --> C_TT
+  T_Cust --> C_NS
+  T_Cust --> C_MD
+
+  %% ============ CROSSWALK (Purview -> Colectica) ============
+  DB    -. maps_to .-> SU
+  SC    -. maps_to .-> RP
+  T_Cust -. maps_to .-> LP
+  T_Cust -. physical .-> PDP
+
+  C_ID -. maps_to .-> V_ID
+  C_FN -. maps_to .-> V_FN
+  C_LN -. maps_to .-> V_LN
+  C_EM -. maps_to .-> V_EM
+  C_PH -. maps_to .-> V_PH
+  C_TT -. maps_to .-> V_TT
+  C_NS -. maps_to .-> V_NS
+  C_MD -. maps_to .-> V_MD
+
+  %% ============ COLECTICA INTERNAL REFERENCES ============
+  SU --> RP
+  RP --> LP
+  LP --> DR --> PDP
+
+  LP --> V_ID
+  LP --> V_FN
+  LP --> V_LN
+  LP --> V_EM
+  LP --> V_PH
+  LP --> V_TT
+  LP --> V_NS
+  LP --> V_MD
+
+  V_ID --> RV_ID
+  V_FN --> RV_PN
+  V_LN --> RV_PN
+  V_EM --> RV_EM
+  V_PH --> RV_PH
+  V_TT --> RV_TT
+  V_NS --> RV_NS
+  V_MD --> RV_MD
+
+  RV_TT --> CS_TT --> CAT_TT
+  RV_NS --> CS_NS --> CAT_NS
+
+  CONC --> C1 & C2 & C3 & C4 & C5 & C6 & C7 & C8
+  RV_ID --> C1
+  RV_PN --> C2
+  RV_PN --> C3
+  RV_EM --> C4
+  RV_PH --> C5
+  RV_TT --> C6
+  RV_NS --> C7
+  RV_MD --> C8
+
+  %% ============ STYLING ============
+  classDef purview fill:#E8F1FB,stroke:#2563EB,color:#0B1F44;
+  classDef study   fill:#F3E8FF,stroke:#7C3AED,color:#2A0B45;
+  classDef data    fill:#E6FFFA,stroke:#0D9488,color:#063C36;
+  classDef vars    fill:#FFF7E6,stroke:#D97706,color:#4A2A05;
+  classDef reuse   fill:#FFE8EC,stroke:#DC2626,color:#4A0712;
+  classDef codes   fill:#ECFCCB,stroke:#65A30D,color:#1A2E05;
+  classDef concept fill:#E0F2FE,stroke:#0284C7,color:#0C2E44;
+
+  class DB,SC,T_Cust,C_ID,C_FN,C_LN,C_EM,C_PH,C_TT,C_NS,C_MD purview;
+  class SU,RP study;
+  class LP,DR,PDP data;
+  class V_ID,V_FN,V_LN,V_EM,V_PH,V_TT,V_NS,V_MD vars;
+  class RV_ID,RV_PN,RV_EM,RV_PH,RV_TT,RV_NS,RV_MD reuse;
+  class CS_TT,CS_NS,CAT_TT,CAT_NS codes;
+  class CONC,C1,C2,C3,C4,C5,C6,C7,C8 concept;

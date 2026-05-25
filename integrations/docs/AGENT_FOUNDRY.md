@@ -80,6 +80,23 @@ while run.status in ["queued", "in_progress"]:
     run = client.agents.get_run(thread_id, run.id)
 ```
 
+### 5. Handle Tool Calls (`requires_action`)
+
+For function tools, your runtime must execute tool calls and submit outputs back to the run.
+
+This repo includes a bridge skeleton:
+
+- `integrations/aifoundry/colectica_tool_bridge.py`
+- `integrations/examples/aifoundry_statistician_prompt_agent_example.py`
+
+The bridge provides:
+
+- extraction of pending tool calls from `run.required_action`
+- dispatch to an executor callback
+- formatting and submission of `tool_outputs`
+
+Default behavior is non-destructive (echoes tool calls). Replace the bridge executor with your real Colectica MCP transport (stdio or HTTP) for production.
+
 ## Advantages
 
 - ✅ Native Azure integration

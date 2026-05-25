@@ -1,0 +1,253 @@
+{
+  "$schema": "https://example.org/schemas/purview-colectica-crosswalk/v1.json",
+  "name": "AdventureWorks -> Colectica DDI Mapping",
+  "version": "0.1.0",
+  "generated": "2026-05-25",
+  "direction": "purview_source -> colectica_target",
+  "source": {
+    "system": "Microsoft Purview",
+    "account": "fabricdemos001",
+    "dataSource": "Azure SQL Database",
+    "qualifiedNameRoot": "mssql://fabricdemos001.database.windows.net/Adventureworks"
+  },
+  "target": {
+    "system": "Colectica Repository",
+    "agency": "org.example.adventureworks",
+    "language": "en-CA",
+    "versioning": { "initialVersion": 1, "guidStrategy": "uuid_v4_at_write_time" }
+  },
+  "entityCrosswalk": [
+    { "purviewEntityType": "azure_sql_db",     "colecticaItemType": "StudyUnit" },
+    { "purviewEntityType": "azure_sql_schema", "colecticaItemType": "ResourcePackage" },
+    { "purviewEntityType": "azure_sql_table",  "colecticaItemType": "LogicalProduct + PhysicalDataProduct + DataRelationship" },
+    { "purviewEntityType": "azure_sql_column", "colecticaItemType": "Variable + RepresentedVariable" },
+    { "purviewEntityType": "column.classification", "colecticaItemType": "Concept (in ConceptScheme)" },
+    { "purviewEntityType": "lookup_table_or_enum",  "colecticaItemType": "CodeScheme + CategoryScheme" }
+  ],
+  "backRefAttributes": [
+    "purviewGuid",
+    "purviewQualifiedName",
+    "purviewEntityType",
+    "sourceDataType",
+    "sourceNullable",
+    "sourceIsPrimaryKey"
+  ],
+  "studies": [
+    {
+      "studyKey": "AW_SalesLT",
+      "colecticaItem": {
+        "ItemType": "StudyUnit",
+        "AgencyId": "org.example.adventureworks",
+        "Identifier": "{{generate:study.AW_SalesLT}}",
+        "Version": 1,
+        "ItemName": { "en-CA": "AdventureWorks_SalesLT" },
+        "Label": { "en-CA": "AdventureWorks SalesLT — survey-style metadata derived from operational schema" },
+        "UserAttributePair": [
+          { "AttributeKey": "purviewQualifiedName",
+            "AttributeValue": "mssql://fabricdemos001.database.windows.net/Adventureworks/SalesLT" },
+          { "AttributeKey": "purviewEntityType", "AttributeValue": "azure_sql_schema" }
+        ]
+      },
+      "tables": [
+        {
+          "tableKey": "Customer",
+          "purview": {
+            "guid": "ea3412c3-7387-4bc1-9923-11f6f6f60000",
+            "qualifiedName": "mssql://fabricdemos001.database.windows.net/Adventureworks/SalesLT/Customer",
+            "entityType": "azure_sql_table"
+          },
+          "logicalProduct": {
+            "ItemType": "LogicalProduct",
+            "AgencyId": "org.example.adventureworks",
+            "Identifier": "{{generate:lp.Customer}}",
+            "Version": 1,
+            "ItemName": { "en-CA": "Customer_LogicalProduct" },
+            "Label": { "en-CA": "Logical product describing the SalesLT.Customer table" }
+          },
+          "physicalDataProduct": {
+            "ItemType": "PhysicalDataProduct",
+            "AgencyId": "org.example.adventureworks",
+            "Identifier": "{{generate:pdp.Customer}}",
+            "Version": 1,
+            "ItemName": { "en-CA": "Customer_PhysicalDataProduct" }
+          },
+          "columns": [
+            {
+              "name": "CustomerID",
+              "sourceDataType": "int",
+              "isPrimaryKey": true,
+              "categorical": false,
+              "representedVariable": "{{generate:rv.Customer.CustomerID}}",
+              "variable": "{{generate:v.Customer.CustomerID}}",
+              "concept": "{{generate:c.CustomerIdentifier}}",
+              "codeScheme": null
+            },
+            {
+              "name": "FirstName",
+              "sourceDataType": "nvarchar(50)",
+              "categorical": false,
+              "representedVariable": "{{generate:rv.PersonName.First}}",
+              "variable": "{{generate:v.Customer.FirstName}}",
+              "concept": "{{generate:c.PersonGivenName}}",
+              "codeScheme": null
+            },
+            {
+              "name": "LastName",
+              "sourceDataType": "nvarchar(50)",
+              "categorical": false,
+              "representedVariable": "{{generate:rv.PersonName.Last}}",
+              "variable": "{{generate:v.Customer.LastName}}",
+              "concept": "{{generate:c.PersonFamilyName}}",
+              "codeScheme": null
+            },
+            {
+              "name": "EmailAddress",
+              "sourceDataType": "nvarchar(50)",
+              "categorical": false,
+              "representedVariable": "{{generate:rv.EmailAddress}}",
+              "variable": "{{generate:v.Customer.EmailAddress}}",
+              "concept": "{{generate:c.EmailAddress}}",
+              "codeScheme": null
+            },
+            {
+              "name": "Phone",
+              "sourceDataType": "nvarchar(25)",
+              "categorical": false,
+              "representedVariable": "{{generate:rv.PhoneNumber}}",
+              "variable": "{{generate:v.Customer.Phone}}",
+              "concept": "{{generate:c.PhoneNumber}}",
+              "codeScheme": null
+            },
+            {
+              "name": "Title",
+              "sourceDataType": "nvarchar(8)",
+              "categorical": true,
+              "representedVariable": "{{generate:rv.PersonTitle}}",
+              "variable": "{{generate:v.Customer.Title}}",
+              "concept": "{{generate:c.PersonTitle}}",
+              "codeScheme": "{{generate:cs.PersonTitle}}",
+              "codeSchemeValues": [
+                { "Value": "Mr.",  "Label": "Mr." },
+                { "Value": "Mrs.", "Label": "Mrs." },
+                { "Value": "Ms.",  "Label": "Ms." },
+                { "Value": "Dr.",  "Label": "Dr." }
+              ]
+            },
+            {
+              "name": "NameStyle",
+              "sourceDataType": "bit",
+              "categorical": true,
+              "representedVariable": "{{generate:rv.NameStyleFlag}}",
+              "variable": "{{generate:v.Customer.NameStyle}}",
+              "concept": "{{generate:c.NameStyleFlag}}",
+              "codeScheme": "{{generate:cs.BooleanFlag}}",
+              "codeSchemeValues": [
+                { "Value": "0", "Label": "Western" },
+                { "Value": "1", "Label": "Eastern" }
+              ]
+            },
+            {
+              "name": "ModifiedDate",
+              "sourceDataType": "datetime",
+              "categorical": false,
+              "representedVariable": "{{generate:rv.AuditModifiedDate}}",
+              "variable": "{{generate:v.Customer.ModifiedDate}}",
+              "concept": "{{generate:c.RecordModifiedTimestamp}}",
+              "codeScheme": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "transactionPlan": {
+    "order": [
+      "ConceptScheme + Concepts",
+      "CategoryScheme + CodeScheme (per categorical column)",
+      "RepresentedVariable",
+      "Variable",
+      "LogicalProduct + DataRelationship + PhysicalDataProduct",
+      "StudyUnit (root, references all of the above)"
+    ],
+    "tools": [
+      "create_transaction",
+      "add_items_to_transaction",
+      "commit_transaction",
+      "cancel_transaction (on failure)"
+    ]
+  },
+  "validationRules": [
+    "Every Variable must reference exactly one RepresentedVariable.",
+    "Every categorical column must produce a CodeScheme; non-categorical columns must NOT.",
+    "Every item must carry purviewGuid + purviewQualifiedName in UserAttributePair.",
+    "Initial Version is always 1; never overwrite an existing item without a version bump."
+  ],
+  "diagram": {
+    "format": "mermaid",
+    "graph": [
+      "graph TD",
+      "  subgraph Purview[Purview Catalog]",
+      "    DB[Azure SQL DB\\nAdventureworks]",
+      "    SC[Schema\\nSalesLT]",
+      "    T_Cust[Table\\nCustomer\\nea3412c3...]",
+      "    C_ID[Column CustomerID]",
+      "    C_FN[Column FirstName]",
+      "    C_LN[Column LastName]",
+      "    C_EM[Column EmailAddress]",
+      "    C_PH[Column Phone]",
+      "    C_TT[Column Title]",
+      "    C_NS[Column NameStyle]",
+      "    C_MD[Column ModifiedDate]",
+      "  end",
+      "",
+      "  subgraph Colectica[Colectica DDI]",
+      "    SU[StudyUnit\\nAW_SalesLT]",
+      "    RP[ResourcePackage\\nSalesLT]",
+      "    LP[LogicalProduct\\nCustomer]",
+      "    PDP[PhysicalDataProduct\\nCustomer]",
+      "    V_ID[Variable CustomerID]",
+      "    V_FN[Variable FirstName]",
+      "    V_LN[Variable LastName]",
+      "    V_EM[Variable EmailAddress]",
+      "    V_PH[Variable Phone]",
+      "    V_TT[Variable Title]",
+      "    V_NS[Variable NameStyle]",
+      "    V_MD[Variable ModifiedDate]",
+      "    RV_PN[RepresentedVariable\\nPersonName]",
+      "    RV_EM[RepresentedVariable\\nEmailAddress]",
+      "    RV_PH[RepresentedVariable\\nPhoneNumber]",
+      "    CS_TT[CodeScheme\\nPersonTitle]",
+      "    CS_NS[CodeScheme\\nBooleanFlag]",
+      "    CONC[ConceptScheme\\nAW_Concepts]",
+      "  end",
+      "",
+      "  DB --> SC --> T_Cust",
+      "  T_Cust --> C_ID & C_FN & C_LN & C_EM & C_PH & C_TT & C_NS & C_MD",
+      "",
+      "  DB  -. maps_to .-> SU",
+      "  SC  -. maps_to .-> RP",
+      "  T_Cust -. maps_to .-> LP",
+      "  T_Cust -. physical .-> PDP",
+      "",
+      "  C_ID -. maps_to .-> V_ID",
+      "  C_FN -. maps_to .-> V_FN",
+      "  C_LN -. maps_to .-> V_LN",
+      "  C_EM -. maps_to .-> V_EM",
+      "  C_PH -. maps_to .-> V_PH",
+      "  C_TT -. maps_to .-> V_TT",
+      "  C_NS -. maps_to .-> V_NS",
+      "  C_MD -. maps_to .-> V_MD",
+      "",
+      "  V_FN --> RV_PN",
+      "  V_LN --> RV_PN",
+      "  V_EM --> RV_EM",
+      "  V_PH --> RV_PH",
+      "  V_TT --> CS_TT",
+      "  V_NS --> CS_NS",
+      "",
+      "  SU --> RP --> LP --> V_ID & V_FN & V_LN & V_EM & V_PH & V_TT & V_NS & V_MD",
+      "  LP --> PDP",
+      "  CONC --> RV_PN & RV_EM & RV_PH"
+    ]
+  }
+}
