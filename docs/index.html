@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Colectica MCP Server</title>
+  <meta
+    name="description"
+    content="Documentation portal for the Colectica MCP Server: discovery-first metadata workflows, DDI tooling, integrations, deployment, and release guidance."
+  >
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="#top">
+        <span class="brand-mark">CM</span>
+        <span class="brand-copy">
+          <strong>Colectica MCP</strong>
+          <span>Repository metadata tooling</span>
+        </span>
+      </a>
+      <nav class="topnav" aria-label="Primary">
+        <a href="#capabilities">Capabilities</a>
+        <a href="#tooling">Tooling</a>
+        <a href="#integrations">Integrations</a>
+        <a href="#launch">Launch</a>
+        <a href="#releases">Releases</a>
+      </nav>
+      <a class="button ghost" href="https://github.com/Keayoub/colectica-mcp-server" target="_blank" rel="noreferrer">GitHub</a>
+    </header>
+
+    <main id="top">
+      <section class="hero panel">
+        <div class="hero-copy">
+          <p class="eyebrow">Discovery-first metadata operations</p>
+          <h1>Ship Colectica repository workflows through a clean MCP surface.</h1>
+          <p class="hero-text">
+            Colectica MCP Server exposes Colectica Repository REST endpoints as MCP tools for discovery,
+            search, DDI retrieval, transactional updates, and AI-agent orchestration.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#launch">Get started</a>
+            <a class="button secondary" href="#integrations">Explore integrations</a>
+          </div>
+        </div>
+        <div class="hero-side">
+          <div class="metric-card drift-up">
+            <span class="metric-label">Coverage</span>
+            <strong>80+ API operations</strong>
+            <p>OpenAPI discovery plus named wrappers for common Colectica workflows.</p>
+          </div>
+          <div class="metric-card drift-down">
+            <span class="metric-label">Transports</span>
+            <strong>stdio and streamable HTTP</strong>
+            <p>Local desktop agents and remote/container deployments share the same tool model.</p>
+          </div>
+          <div class="metric-card drift-up delay-2">
+            <span class="metric-label">Safety</span>
+            <strong>Discovery before mutation</strong>
+            <p>Named workflows favor read, compare, and validate steps before transactional writes.</p>
+          </div>
+        </div>
+        <div class="hero-glow hero-glow-a" aria-hidden="true"></div>
+        <div class="hero-glow hero-glow-b" aria-hidden="true"></div>
+      </section>
+
+      <section class="section-grid" id="capabilities">
+        <div>
+          <p class="eyebrow">Core capabilities</p>
+          <h2>Built for metadata discovery, quality, and controlled updates.</h2>
+        </div>
+        <div class="card-grid" id="capability-grid"></div>
+      </section>
+
+      <section class="section-grid" id="tooling">
+        <div>
+          <p class="eyebrow">Tool families</p>
+          <h2>Convenience tools on top of generic OpenAPI execution.</h2>
+        </div>
+        <div class="tool-layout">
+          <article class="panel tool-panel">
+            <h3>How teams use it</h3>
+            <ol class="sequence-list">
+              <li>Verify health and discover operations.</li>
+              <li>Search items, questions, variables, concepts, and code lists.</li>
+              <li>Retrieve DDI or JSON fragments for agent reasoning.</li>
+              <li>Run focused transactions for tags, comments, ratings, or item registration.</li>
+            </ol>
+          </article>
+          <div class="card-grid compact" id="tool-grid"></div>
+        </div>
+      </section>
+
+      <section class="section-grid">
+        <div>
+          <p class="eyebrow">Architecture</p>
+          <h2>One MCP surface for desktop agents, containers, and Azure hosting.</h2>
+        </div>
+        <div class="panel architecture-panel">
+          <div class="architecture-flow">
+            <div class="flow-node">
+              <span class="node-kicker">1</span>
+              <strong>Agent runtime</strong>
+              <p>Copilot, Foundry, LangChain, LlamaIndex, or custom tool-calling clients.</p>
+            </div>
+            <div class="flow-arrow" aria-hidden="true"></div>
+            <div class="flow-node">
+              <span class="node-kicker">2</span>
+              <strong>MCP transport</strong>
+              <p>stdio for local sessions, streamable HTTP for remote hosting.</p>
+            </div>
+            <div class="flow-arrow" aria-hidden="true"></div>
+            <div class="flow-node accent">
+              <span class="node-kicker">3</span>
+              <strong>Colectica MCP Server</strong>
+              <p>Discovery cache, auth handling, pagination helpers, and named tool wrappers.</p>
+            </div>
+            <div class="flow-arrow" aria-hidden="true"></div>
+            <div class="flow-node">
+              <span class="node-kicker">4</span>
+              <strong>Colectica API</strong>
+              <p>Repository endpoints, DDI fragments, relationship graphs, and transactions.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-grid" id="integrations">
+        <div>
+          <p class="eyebrow">Integration guides</p>
+          <h2>Pick the orchestration model that matches your environment.</h2>
+        </div>
+        <div class="card-grid" id="integration-grid"></div>
+      </section>
+
+      <section class="section-grid" id="launch">
+        <div>
+          <p class="eyebrow">Quick launch</p>
+          <h2>Minimal setup for local development and hosted deployments.</h2>
+        </div>
+        <div class="launch-layout">
+          <article class="panel code-panel">
+            <h3>Install</h3>
+            <pre><code>python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -e .</code></pre>
+          </article>
+          <article class="panel code-panel">
+            <h3>Configure</h3>
+            <pre><code>COLECTICA_BASE_URL=https://your-server.colectica.org/
+COLECTICA_BEARER_TOKEN=&lt;token&gt;
+# or COLECTICA_USERNAME / COLECTICA_PASSWORD</code></pre>
+          </article>
+          <article class="panel code-panel">
+            <h3>Run</h3>
+            <pre><code>colectica-mcp --transport stdio
+
+colectica-mcp --transport streamable-http --mount-path /mcp</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-grid" id="releases">
+        <div>
+          <p class="eyebrow">Release notes</p>
+          <h2>Recent milestones and version history.</h2>
+        </div>
+        <div class="timeline panel" id="release-grid"></div>
+      </section>
+    </main>
+
+    <footer class="footer panel">
+      <div>
+        <strong>Colectica MCP Server</strong>
+        <p>Apache 2.0 licensed MCP server for Colectica Repository REST automation.</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/Keayoub/colectica-mcp-server/blob/main/README.md" target="_blank" rel="noreferrer">README</a>
+        <a href="https://github.com/Keayoub/colectica-mcp-server/tree/main/integrations/docs" target="_blank" rel="noreferrer">Integration docs</a>
+        <a href="https://github.com/Keayoub/colectica-mcp-server/tree/main/releases" target="_blank" rel="noreferrer">Release notes</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="./site.js"></script>
+</body>
+</html>

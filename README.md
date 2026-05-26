@@ -9,6 +9,8 @@ MCP server for Colectica Repository REST API with:
 
 ## 1. Install
 
+Documentation site: `https://keayoub.github.io/colectica-mcp-server/`
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
